@@ -10,7 +10,7 @@ import { styled } from "@mui/material/styles";
 
 
 
-const ResearchTableBodyRender = (props) => {
+const PublicationTableBodyRender = (props) => {
 
 
   const {
@@ -33,6 +33,23 @@ const ResearchTableBodyRender = (props) => {
       border: 0,
     },
   }));
+
+  function shortenAfterDot(sentence) {
+    let dotCount = 0;
+    let shortenedSentence = "";
+    for (let i = 0; i < sentence.length; i++) {
+        shortenedSentence += sentence[i];
+        if (sentence[i] === '.') {
+            dotCount++;
+        }
+        if (dotCount > 0 && shortenedSentence.length > (12 + dotCount)) {
+            shortenedSentence = shortenedSentence.trim() + "...";
+            break;
+        }
+    }
+    return shortenedSentence;
+}
+
 
   console.log("data : ", bodyData);
 
@@ -79,11 +96,19 @@ const ResearchTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              {data.description}
+              {shortenAfterDot(data.description)}
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              <img src={data.imageURL} alt="research image" width="30" height="20"/>
+              {data.publishDate}
+            </TableCell>
+
+            <TableCell align="center" style={useStyles.tableCellTextDec}>
+              {shortenAfterDot(data.refURL)}
+            </TableCell>
+
+            <TableCell align="center" style={useStyles.tableCellText}>
+              {data.pdfFile}
             </TableCell>
 
           </StyledTableRow>
@@ -95,7 +120,7 @@ const ResearchTableBodyRender = (props) => {
 
 
 
-export default ResearchTableBodyRender;
+export default PublicationTableBodyRender;
 
 
   // style START
@@ -104,7 +129,13 @@ export default ResearchTableBodyRender;
       fontWeight: 500,
       fontSize: "16px",
       padding: "12px 4px",
-      // borderRight:"1px solid #B3B3B3",
+      color: "#000000",
+      whiteSpace: "nowrap",
+    },
+    tableCellTextDec: {
+      fontWeight: 500,
+      fontSize: "16px",
+      padding: "12px 4px",
       color: "#000000",
       whiteSpace: "nowrap",
     },
@@ -112,7 +143,6 @@ export default ResearchTableBodyRender;
       padding: "0px 0px",
       margin: "0px",
       textAlign:"center"
-      // borderRight:"1px solid #B3B3B3",
     },
   };
   // style END

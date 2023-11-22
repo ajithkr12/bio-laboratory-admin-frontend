@@ -1,10 +1,11 @@
-import React from 'react'
+import React from 'react';
+import PublicationList from '../lists/PublicationList';
 const Publication = () => {
   return (
     <div style={{padding:"26px",backgroundColor:'white',margin:"0px",}}>
       
       
-      <h1>Publication</h1>
+      <PublicationList />
       
       
     </div>
