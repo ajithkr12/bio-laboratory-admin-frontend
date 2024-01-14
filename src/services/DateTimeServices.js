@@ -1,40 +1,30 @@
-import moment from "moment";
 
-export const JsDatetimeToSQLDate = (_datetime) => {
-  try {
-    var startDay =("0" + (_datetime.getDate())).slice(-2)
-    var startMonth =("0" + (_datetime.getMonth()+1)).slice(-2)
-    var startYear = _datetime.getFullYear();
-    var startDate =startYear + "-"+ startMonth + "-"  + startDay;
-    return startDate;
-  } catch (error) {
-    return ''
-  }
+export const dateStringToYear = (_dateString) => {
+
+  const dateObject = new Date(_dateString);
+  const year = dateObject.getFullYear();
+  return year;
     
 }
 
-export const ISO8601toDateTimeConverter = (_datetime) => {
-  var datetime = new Date(_datetime);
-  var time=datetime.toLocaleString('en-US', {
-    // weekday: 'long',
+
+
+
+export const dateStringFormater = (_dateString) => {
+
+  const inputDate = new Date(_dateString);
+
+  const options = {
     year: 'numeric',
-    month: 'short',
+    month: 'long',
     day: 'numeric',
     hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-  return time;
-}
-
-export const ISO8601toDateConverter = (_datetime) => {
-  var datetime = new Date(_datetime);
-  var time=datetime.toLocaleString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-
-  });
-  return time;
+    minute: 'numeric',
+    second: 'numeric',
+    timeZoneName: 'short',
+  };
+  
+  const formattedDateString = inputDate.toLocaleDateString('en-US', options);
+  return formattedDateString;
+    
 }

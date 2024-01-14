@@ -57,8 +57,8 @@ const PublicationTableBodyRender = (props) => {
   return (
     <TableBody>
       {bodyData.map((data, index) => {
-        const isItemSelected = isSelected(data.Id);
-        const labelId = `enhanced-table-checkbox-${data.Id}`;
+        const isItemSelected = isSelected(data.id);
+        const labelId = `enhanced-table-checkbox-${data.id}`;
 
 
         return (
@@ -92,7 +92,7 @@ const PublicationTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-                {data.heading}            
+                {data.title}            
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
@@ -100,15 +100,15 @@ const PublicationTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              {data.publishDate}
+              {data.year}
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellTextDec}>
-              {shortenAfterDot(data.refURL)}
+              {shortenAfterDot(data.link)}
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              {data.pdfFile}
+              {data.link}
             </TableCell>
 
           </StyledTableRow>

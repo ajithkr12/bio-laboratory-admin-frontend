@@ -75,7 +75,7 @@ const ResearchTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-                {data.heading}            
+                {data.title}            
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
@@ -83,7 +83,7 @@ const ResearchTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              <img src={data.imageURL} alt="research image" width="30" height="20"/>
+              <img src={data.imgURL} alt="research image" width="30" height="20"/>
             </TableCell>
 
           </StyledTableRow>

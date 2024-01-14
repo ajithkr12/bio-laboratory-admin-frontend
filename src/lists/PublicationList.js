@@ -20,7 +20,9 @@ import SearchBox from "../components/SearchBox";
 import { colors } from "../constants/ConstantColors";
 
 import PublicationForm from "../forms/PublicationForm"
-
+import {db} from '../firebase';
+import { collection, deleteDoc, getDocs,doc } from "firebase/firestore";
+import DeleteConfirmation from "../components/DeleteConfirmation";
 
 PublicationTableHeader.propTypes = {
   numSelected: PropTypes.number.isRequired,
@@ -153,7 +155,12 @@ const PublicationList = (props) => {
 
     setRowsPerPage(0);
     setLoading(true);
-    setFetchData(dummyData);
+    await getDocs(collection(db, "publication"))
+    .then((querySnapshot)=>{               
+        const newData = querySnapshot.docs
+            .map((doc) => ({...doc.data(), id:doc.id }));
+            setFetchData(newData);                
+    })
     setRowsPerPage(12);
     setLoading(false);
   };
@@ -173,8 +180,8 @@ const PublicationList = (props) => {
           // Check if searchTerm contains only numeric characters for phone search
           if (
             /^[a-zA-Z0-9\s]+$/.test(searchTerm) &&
-            data.heading &&
-            data.heading.toLowerCase().includes(searchTerm)
+            data.title &&
+            data.title.toLowerCase().includes(searchTerm)
           ) {
             return true;
           }

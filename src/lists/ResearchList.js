@@ -20,7 +20,9 @@ import SearchBox from "../components/SearchBox";
 import { colors } from "../constants/ConstantColors";
 
 import ResearchForm from "../forms/ResearchForm"
-
+import {db} from '../firebase';
+import { collection, deleteDoc, getDocs,doc } from "firebase/firestore";
+import DeleteConfirmation from "../components/DeleteConfirmation";
 
 ResearchTableHeader.propTypes = {
   numSelected: PropTypes.number.isRequired,
@@ -63,6 +65,7 @@ const ResearchList = (props) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditor , setIsEditor] = useState(false)
+  const [openDeleteConfirmation, setOpenDeleteConfirmation] = useState(false);
 
 
 
@@ -118,7 +121,16 @@ const ResearchList = (props) => {
 
   const DeleteClick = async (event) => {
     setDeleteSelected(event.id);
+    setOpenDeleteConfirmation(true);
     console.log("Single Delete : ", event.id);
+
+  };
+
+
+  const ConfirmationDeleteButtonClick = async (id) => {
+    await deleteDoc(doc(db, "research",id));
+    initialFetch();
+    setOpenDeleteConfirmation(false);
   };
 
 
@@ -151,7 +163,12 @@ const ResearchList = (props) => {
 
     setRowsPerPage(0);
     setLoading(true);
-    setFetchData(dummyData);
+    await getDocs(collection(db, "research"))
+    .then((querySnapshot)=>{               
+        const newData = querySnapshot.docs
+            .map((doc) => ({...doc.data(), id:doc.id }));
+            setFetchData(newData);                
+    })
     setRowsPerPage(12);
     setLoading(false);
   };
@@ -278,6 +295,15 @@ const ResearchList = (props) => {
             dataToEditForm = {dataToEditForm}
         />
     }
+            {openDeleteConfirmation && (
+          <DeleteConfirmation
+            message={"You want to delete selected item ?"}
+            OpenStatus={openDeleteConfirmation}
+            setOpenDeleteConfirmation={setOpenDeleteConfirmation}
+            id={deleteSelected}
+            ConfirmationDeleteButtonClick={ConfirmationDeleteButtonClick}
+          />
+        )}
     </>
   );
 };

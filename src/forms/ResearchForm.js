@@ -20,84 +20,131 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
+import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import {db,storage} from '../firebase';
+import { collection, addDoc } from "firebase/firestore";
+import "../App.css"
+import LoadingOverLay from '../components/loader/LoadingOverLay';
 const ResearchForm = (props) => {
 
-  const {isEditor,openForm,setOpenForm} = props;
+  const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
   const {userData} = useContext(ContextConsumer);
 
-  const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
+  const {register,control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
-    "heading":"",
-    "description":"",
-    "imageURL":"",
+    "title":dataToEditForm?.title ?? "",
+    "description":dataToEditForm?.description ?? "",
+    "type" :researchType[0]
     },
   });  
+
+  const [imgUrl, setImgUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState('');
+
+  const [progresspercent, setProgresspercent] = useState(0);
 
   const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
   const [selectedTab, setSelectedTab] = useState(1);
+  const [loading , setLoading] = useState(false)
 
   const OnCancel = () => {
     setOpenForm(false);
   };
-  const onSubmit = async(data) => {
 
-    const transformedData = {
-      "heading" : data.heading,
-      "description" : data.description,
-      "imageURL" : data.imageURL,
 
-    };
 
-    const postData =  {
-      ...transformedData,
+  const onFileChange = (e) => {
+    const file = e.target.files[0];
 
-    };
-    
-
-    const response = await addConsignment({...postData});
-    console.log("response>>",response);
-
-    if (response.success === true) {
-      console.log("Done");
-      toast.success("Successfully Create Consignment", {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      setTimeout(() => {
-        setOpenForm(false);
-      }, 2000);
-    }else{
-      console.log("Not");
-      toast.error(`Failed : ${response.message} `, {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
     }
-    
+  };
+
+
+  const handlePostData = async(file,data) => {
+    console.log("FIRST")
+
+    if (!file) return;
+    console.log("SECOND")
+
+    const storageRef = ref(storage, `files/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on("state_changed",
+      (snapshot) => {
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        setProgresspercent(progress);
+        console.log("progresspercent",progress)
+
+      },
+      (error) => {
+        alert(error);
+      },
+      () => {
+         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          setImgUrl(downloadURL)
+          console.log("image url UPLOAD--00",downloadURL)
+          console.log("THIRD")
+          try {
+
+            if (downloadURL) {
+              console.log("FORTH");
+              const transformedData = {
+                imgURL: downloadURL,
+                title: data.title,
+                description: data.description,
+                type: data.type.id,
+              };
+        
+              console.log("image transformedData UPLOAD", transformedData);
+        
+              const docRef =  await addDoc(collection(db, "research"), transformedData );
+              console.log("Document written with ID: ", docRef.id);
+              if(docRef.id){
+                setLoading(false)
+              }
+        
+              // Reset form or perform any other necessary actions
+              // e.target.reset();
+              setImgUrl('');
+            }
+            
+          } catch (error) {
+                  console.error("Error handling upload or adding document: ", error);
+                  setLoading(false)
+
+          }
+
+
+        });
+      }
+      
+    );
+
   }
 
 
+  const onSubmit = async(data, e) => {
+      console.log(data);
+      setLoading(true)
+      await handlePostData(data.picture[0],data);
 
-
-
+  }
 
 
   useEffect(() => {
 
     console.log("RUN")
 
-  }, [reset, currentFormState]);
+  }, [reset]);
 
 
 
@@ -116,36 +163,37 @@ const ResearchForm = (props) => {
 
         <DialogContent dividers>
 
-                <Grid container style={{ maxHeight: 700, overflow: "auto" }}>
+                <Grid container style={{ maxHeight: 700, overflow: "auto",position:'relative' }}>
+                  {loading && <LoadingOverLay show={loading}/>}
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
-                            name="heading"
+                            name="title"
                             control={control}
                             defaultValue=""
                             rules={{ 
-                              required:"heading is required"
+                              required:"title is required"
                             }}
                             render={({ field }) => (
                             <TextField
                                 {...field}
                                 size="small"
                                 id="outlined-basic" 
-                                label="Heading"
+                                label="title"
                                 variant="outlined"
                                 fullWidth
-                                error={!!errors.heading}
+                                error={!!errors.title}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
                             )}
                         />
-                        <p style={useStyles.errorText}>{errors.heading ? errors.heading.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.title ? errors.title.message : ''}</p>
                     </Grid>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
                             name="description"
                             control={control}
                             defaultValue=""
-                            rules={{ required: 'Description is required' , pattern: {value: /^[0-9]*$/,message: 'Please enter only numbers',}}}
+                            rules={{ required: 'Description is required' }}
                             render={({ field }) => (
                             <TextField
                                 {...field}
@@ -163,27 +211,61 @@ const ResearchForm = (props) => {
                         />
                         <p style={useStyles.errorText}>{errors.description ? errors.description.message : ''}</p>
                     </Grid>
-                    <Grid item md={12} style={useStyles.root}>
-                        <Controller
-                            name="imageURL"
-                            control={control}
-                            defaultValue=""
-                            rules={{ required: 'Image is required' ,}}
-                            render={({ field }) => (
-                            <TextField
-                                {...field}
-                                size="small"
-                                id="outlined-basic" 
-                                label="Image"
-                                variant="outlined"
-                                fullWidth
-                                error={!!errors.imageURL}
-                                // helperText={errors.userName ? errors.userName.message : ''}
+                    <Grid item md={6} style={useStyles.root}>
+                      <Controller
+                          name="type"
+                          control={control}
+                          rules={{ required: "Type is required" }}
+                          render={({ field: { value, onChange } }) => (
+                            // <FormControl fullWidth>
+                            <Autocomplete
+                              id="type"
+                              options={researchType}
+                              value={value}
+                              getOptionLabel={(option) =>
+                                option.name !== null ? option.name : ""
+                              }
+                              style={useStyles.textfield}
+                              onChange={async (event, newValue) => {
+                                onChange(newValue);
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size="small"
+                                  InputProps={{
+                                    ...params.InputProps,
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                  label="Research Type"
+                                />
+                              )}
                             />
-                            )}
+                          )}
                         />
-                        <p style={useStyles.errorText}>{errors.imageURL ? errors.imageURL.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.type ? errors.type.message : ''}</p>
                     </Grid>
+
+                    <Grid item md={6} style={useStyles.imageInputBox}>
+                      <input
+                        {...register("picture", {
+                            required: "Picture is required",
+                            })}
+                        type="file"
+                        id="picture"
+                        onChange={onFileChange}
+                        style={useStyles.imageInput}
+                      />
+                        <p style={useStyles.errorText}>{errors.picture ? errors.picture.message : ''}</p>
+                    </Grid>
+
+                    {isEditor === true || selectedFile ? (
+        <div style={{}}>
+          <p>Selected Image Preview:</p>
+          <img src={selectedFile || dataToEditForm.imgURL} alt="Selected Preview" style={{width:'100%',height:'260px',objectFit: "cover" }} />
+        </div>
+      ):null}
+{/* backgroundSize: "cover",backgroundRepeat: "no-repeat",backgroundPosition: "center"  */}
 
                 </Grid>
         </DialogContent>
@@ -309,54 +391,24 @@ const useStyles = {
     fontSize:'14px',
     lineHeight:'26px',
     height:"26px"
+  },
+  imageInputBox:{
+    display:'flex',
+    // alignItems:'center',
+    justifyContent:'center',
+    flexDirection: "column",
+    padding :'6px 24px'
+  },
+  imageInput:{
+    fontSize:'15px',
+    // color:'#0964b0'
   }
 };
 // style END
 
-const services = [
-  { id: 1, name: 'Priority' },
-  { id: 2, name: 'Standard' },
-  { id: 3, name: 'Swift' },
-
-];
-
-const travelMethod = [
-  { id: 1, name: 'Air' },
-  { id: 2, name: 'Surface' },
-];
-
-const conformation = [
-  { id: 0, name: 'Yes' },
-  { id: 1, name: 'No' },
-];
-
-const payment = [
-  { id: 1, name: 'Credit' },
-  { id: 2, name: 'Paid' },
-  { id: 3, name: 'To Paid' },
-  { id: 4, name: 'COD' },
-
-
-
-];
-
-const type = [
-  { id: 1, name: 'Non DOX' },
-  { id: 2, name: 'DOX' },
-
-];
-
-const weight = [
-  { id: 1, name: 'Actual Weight' },
-  { id: 2, name: 'Volumetric Weight' },
-
-];
-
-
-
-const creditClient = [
-  { id: 1, name: 'client-123' },
-  { id: 2, name: 'client-234' },
+const researchType = [
+  { id: 0, name: 'Endangered Species Ecology'},
+  { id: 1, name: 'Disease Ecology' },
 
 ];
 

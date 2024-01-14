@@ -19,17 +19,22 @@ import { toast } from "react-toastify";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { collection, addDoc } from "firebase/firestore";
 
+import {db,storage} from '../firebase';
+
+import { dateStringToYear ,dateStringFormater} from '../services/DateTimeServices';
 const PublicationForm = (props) => {
 
-  const {isEditor,openForm,setOpenForm} = props;
+  const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
   const {userData} = useContext(ContextConsumer);
 
   const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
-    "heading":"",
-    "description":"",
-    "imageURL":"",
+    "title":dataToEditForm?.title ?? "",
+    "description":dataToEditForm?.description ?? "",
+    "link": dataToEditForm?.link ?? "",
+    "type": publicationType[0]
     },
   });  
 
@@ -41,56 +46,28 @@ const PublicationForm = (props) => {
     setOpenForm(false);
   };
   const onSubmit = async(data) => {
+    const date = dateStringFormater(data.dateSelector);
+    console.error("data.dateSelector ", data.dateSelector);
 
     const transformedData = {
-      "heading" : data.heading,
+      "title" : data.title,
       "description" : data.description,
-      "imageURL" : data.imageURL,
+      "link" : data.link,
+      "type" : data.type.id,
+      "year" : date
 
     };
 
-    const postData =  {
-      ...transformedData,
-
-    };
-    
-
-    const response = await addConsignment({...postData});
-    console.log("response>>",response);
-
-    if (response.success === true) {
-      console.log("Done");
-      toast.success("Successfully Create Consignment", {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-      setTimeout(() => {
-        setOpenForm(false);
-      }, 2000);
-    }else{
-      console.log("Not");
-      toast.error(`Failed : ${response.message} `, {
-        position: "top-center",
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+    try {
+      const docRef = await addDoc(collection(db, "publication"), transformedData);
+      console.log("Document written with ID: ", docRef.id);
+      // e.target.reset();
+    } catch (e) {
+      console.error("Error adding document: ", e);
     }
+  
     
   }
-
-
-
-
-
 
 
   useEffect(() => {
@@ -105,7 +82,7 @@ const PublicationForm = (props) => {
     <Dialog open={openForm}  maxWidth="md" fullWidth>
         <DialogTitle style={useStyles.dialogTitleStyle}>
             <Typography variant="h6" component="div" style={{ flexGrow: 1 }}>
-                    {isEditor ? "Update Research" : "Add Research"}
+                    {isEditor ? "Update Publication" : "Add Publication"}
             </Typography>
 
             <CloseIcon onClick={() => OnCancel()} />
@@ -119,33 +96,33 @@ const PublicationForm = (props) => {
                 <Grid container style={{ maxHeight: 700, overflow: "auto" }}>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
-                            name="heading"
+                            name="title"
                             control={control}
                             defaultValue=""
                             rules={{ 
-                              required:"heading is required"
+                              required:"title is required"
                             }}
                             render={({ field }) => (
                             <TextField
                                 {...field}
                                 size="small"
                                 id="outlined-basic" 
-                                label="Heading"
+                                label="title"
                                 variant="outlined"
                                 fullWidth
-                                error={!!errors.heading}
+                                error={!!errors.title}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
                             )}
                         />
-                        <p style={useStyles.errorText}>{errors.heading ? errors.heading.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.title ? errors.title.message : ''}</p>
                     </Grid>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
                             name="description"
                             control={control}
                             defaultValue=""
-                            rules={{ required: 'Description is required' , pattern: {value: /^[0-9]*$/,message: 'Please enter only numbers',}}}
+                            rules={{ required: 'Description is required' ,}}
                             render={({ field }) => (
                             <TextField
                                 {...field}
@@ -165,25 +142,95 @@ const PublicationForm = (props) => {
                     </Grid>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
-                            name="imageURL"
+                            name="link"
                             control={control}
                             defaultValue=""
-                            rules={{ required: 'Image is required' ,}}
+                            rules={{ required: false}}
                             render={({ field }) => (
                             <TextField
                                 {...field}
                                 size="small"
                                 id="outlined-basic" 
-                                label="Image"
+                                label="Referense Link"
                                 variant="outlined"
                                 fullWidth
-                                error={!!errors.imageURL}
+                                error={!!errors.link}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
                             )}
                         />
-                        <p style={useStyles.errorText}>{errors.imageURL ? errors.imageURL.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.link ? errors.link.message : ''}</p>
                     </Grid>
+
+                    <Grid item md={6} style={useStyles.root}>
+                      <Controller
+                          name="type"
+                          control={control}
+                          rules={{ required: "Type is required" }}
+                          render={({ field: { value, onChange } }) => (
+                            // <FormControl fullWidth>
+                            <Autocomplete
+                              id="type"
+                              options={publicationType}
+                              value={value}
+                              getOptionLabel={(option) =>
+                                option.name !== null ? option.name : ""
+                              }
+                              style={useStyles.textfield}
+                              onChange={async (event, newValue) => {
+                                onChange(newValue);
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size="small"
+                                  InputProps={{
+                                    ...params.InputProps,
+                                  }}
+                                  InputLabelProps={{ shrink: true }}
+                                  label="Research Type"
+                                />
+                              )}
+                            />
+                          )}
+                        />
+                        <p style={useStyles.errorText}>{errors.type ? errors.type.message : ''}</p>
+                    </Grid>
+
+                    <Grid item md={6} style={useStyles.root}>
+              <Controller
+                name="dateSelector"
+                control={control}
+                rules={{ required: 'Year is required' ,}}
+                render={({ field: { value, onChange } }) => (
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    <DesktopDatePicker
+                      // label="Date "
+                      inputFormat="MM/DD/YYYY"
+                      style={useStyles.textfield}
+                      value={value}
+                      onChange={(date) => onChange(date?._d)}
+                      renderInput={(params) => (
+                        <TextField
+                        size="small"
+                          {...params}
+                          InputLabelProps={{ shrink: true }}
+                          label="Date"
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                )}
+              />
+              <p style={useStyles.errorText}>{errors.dateSelector ? errors.dateSelector.message : ''}</p>
+            </Grid>
+
+
+
+
+
+
+
 
                 </Grid>
         </DialogContent>
@@ -313,53 +360,11 @@ const useStyles = {
 };
 // style END
 
-const services = [
-  { id: 1, name: 'Priority' },
-  { id: 2, name: 'Standard' },
-  { id: 3, name: 'Swift' },
+const publicationType = [
+  { id: 0, name: 'Peer'},
+  { id: 1, name: 'Books' },
 
 ];
-
-const travelMethod = [
-  { id: 1, name: 'Air' },
-  { id: 2, name: 'Surface' },
-];
-
-const conformation = [
-  { id: 0, name: 'Yes' },
-  { id: 1, name: 'No' },
-];
-
-const payment = [
-  { id: 1, name: 'Credit' },
-  { id: 2, name: 'Paid' },
-  { id: 3, name: 'To Paid' },
-  { id: 4, name: 'COD' },
-
-
-
-];
-
-const type = [
-  { id: 1, name: 'Non DOX' },
-  { id: 2, name: 'DOX' },
-
-];
-
-const weight = [
-  { id: 1, name: 'Actual Weight' },
-  { id: 2, name: 'Volumetric Weight' },
-
-];
-
-
-
-const creditClient = [
-  { id: 1, name: 'client-123' },
-  { id: 2, name: 'client-234' },
-
-];
-
 
 
 
