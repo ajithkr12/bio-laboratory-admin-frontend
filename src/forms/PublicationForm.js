@@ -19,52 +19,80 @@ import { toast } from "react-toastify";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
-import { collection, addDoc } from "firebase/firestore";
-
+import { collection, addDoc, updateDoc ,doc} from "firebase/firestore";
+import LoadingOverLay from '../components/loader/LoadingOverLay';
 import {db,storage} from '../firebase';
 
-import { dateStringToYear ,dateStringFormater} from '../services/DateTimeServices';
+import { dateStringFormaterToIST,dateStringFormaterToUST} from '../services/DateTimeServices';
 const PublicationForm = (props) => {
 
   const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
   const {userData} = useContext(ContextConsumer);
-
+  const todayDate = new Date()
   const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
     "title":dataToEditForm?.title ?? "",
     "description":dataToEditForm?.description ?? "",
     "link": dataToEditForm?.link ?? "",
-    "type": publicationType[0]
+    "type": dataToEditForm?.type ? publicationType[dataToEditForm.type] : publicationType[0],
+    "dateSelector" : dataToEditForm?.publicationYear ? new Date(dataToEditForm.publicationYear) : new Date()
     },
   });  
 
   const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
   const [selectedTab, setSelectedTab] = useState(1);
+  const [loading , setLoading] = useState(false)
+
 
   const OnCancel = () => {
     setOpenForm(false);
   };
   const onSubmit = async(data) => {
-    const date = dateStringFormater(data.dateSelector);
-    console.error("data.dateSelector ", data.dateSelector);
+    setLoading(true)
+    const date = data.dateSelector.toString();
+    console.log("data.dateSelector ", data.dateSelector);
 
     const transformedData = {
       "title" : data.title,
       "description" : data.description,
       "link" : data.link,
       "type" : data.type.id,
-      "year" : date
+      "publicationYear" : date
 
     };
 
-    try {
-      const docRef = await addDoc(collection(db, "publication"), transformedData);
-      console.log("Document written with ID: ", docRef.id);
-      // e.target.reset();
-    } catch (e) {
-      console.error("Error adding document: ", e);
+    if(isEditor == true){
+      try {
+        const docRef = await updateDoc(doc(db, "publication",dataToEditForm.id), transformedData);
+        console.log("Document written with ID: ", docRef.id);
+        // e.target.reset();
+        if(docRef.id){
+          setLoading(false)
+
+        }
+      } catch (e) {
+        console.error("Error adding document: ", e);
+        setLoading(false)
+
+      }
+    }else{
+      try {
+        const docRef = await addDoc(collection(db, "publication"), transformedData);
+        console.log("Document written with ID: ", docRef.id);
+        if(docRef.id){
+          setLoading(false)
+          setOpenForm(false)
+        }
+        // e.target.reset();
+      } catch (e) {
+        console.error("Error adding document: ", e);
+        setLoading(false)
+
+      }
     }
+
+
   
     
   }
@@ -93,7 +121,8 @@ const PublicationForm = (props) => {
 
         <DialogContent dividers>
 
-                <Grid container style={{ maxHeight: 700, overflow: "auto" }}>
+                <Grid container style={{ maxHeight: 700, overflow: "auto",position:'relative' }}>
+                {loading && <LoadingOverLay show={loading}/>}
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
                             name="title"
@@ -110,6 +139,8 @@ const PublicationForm = (props) => {
                                 label="title"
                                 variant="outlined"
                                 fullWidth
+                                multiline
+                                rows={3}
                                 error={!!errors.title}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
@@ -166,7 +197,7 @@ const PublicationForm = (props) => {
                       <Controller
                           name="type"
                           control={control}
-                          rules={{ required: "Type is required" }}
+                          rules={{ required: "Publication Type is required" }}
                           render={({ field: { value, onChange } }) => (
                             // <FormControl fullWidth>
                             <Autocomplete
@@ -188,7 +219,7 @@ const PublicationForm = (props) => {
                                     ...params.InputProps,
                                   }}
                                   InputLabelProps={{ shrink: true }}
-                                  label="Research Type"
+                                  label="Publication Type"
                                 />
                               )}
                             />
@@ -224,12 +255,6 @@ const PublicationForm = (props) => {
               />
               <p style={useStyles.errorText}>{errors.dateSelector ? errors.dateSelector.message : ''}</p>
             </Grid>
-
-
-
-
-
-
 
 
                 </Grid>

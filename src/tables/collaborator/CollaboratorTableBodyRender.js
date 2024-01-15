@@ -10,7 +10,7 @@ import { styled } from "@mui/material/styles";
 import { dateStringFormaterToNormal } from "../../services/DateTimeServices";
 
 
-const PublicationTableBodyRender = (props) => {
+const CollaboratorTableBodyRender = (props) => {
 
 
   const {
@@ -92,19 +92,19 @@ const PublicationTableBodyRender = (props) => {
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-                {data.title}            
+                {data.collaboratorName}            
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              {data.description}
+              {data.organization}
             </TableCell>
 
             <TableCell align="center" style={useStyles.tableCellText}>
-              {dateStringFormaterToNormal(data.publicationYear)}
+              {data.designation}
             </TableCell>
 
-            <TableCell align="center" style={useStyles.tableCellTextDec}>
-             {data.link ? <a href={data.link}>Ref Link</a> : <a>No Ref Link</a>} 
+            <TableCell align="center" style={useStyles.tableCellText}>
+             {data.about} 
             </TableCell>
 
             {/* <TableCell align="center" style={useStyles.tableCellText}>
@@ -120,7 +120,7 @@ const PublicationTableBodyRender = (props) => {
 
 
 
-export default PublicationTableBodyRender;
+export default CollaboratorTableBodyRender;
 
 
   // style START

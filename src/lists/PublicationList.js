@@ -41,7 +41,7 @@ const PublicationList = (props) => {
     "Description",
     "Year",
     "Ref URL",
-    "PDF"
+    // "PDF"
   ];
   // const {searchTerm} = props;
   const {userData } = useContext(ContextConsumer);
@@ -67,6 +67,7 @@ const PublicationList = (props) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditor , setIsEditor] = useState(false)
+  const [openDeleteConfirmation, setOpenDeleteConfirmation] = useState(false);
 
 
 
@@ -122,7 +123,16 @@ const PublicationList = (props) => {
 
   const DeleteClick = async (event) => {
     setDeleteSelected(event.id);
+    setOpenDeleteConfirmation(true);
     console.log("Single Delete : ", event.id);
+
+  };
+
+
+  const ConfirmationDeleteButtonClick = async (id) => {
+    await deleteDoc(doc(db, "publication",id));
+    initialFetch();
+    setOpenDeleteConfirmation(false);
   };
 
 
@@ -287,6 +297,15 @@ const PublicationList = (props) => {
             dataToEditForm = {dataToEditForm}
         />
     }
+        {openDeleteConfirmation && (
+          <DeleteConfirmation
+            message={"You want to delete selected item ?"}
+            OpenStatus={openDeleteConfirmation}
+            setOpenDeleteConfirmation={setOpenDeleteConfirmation}
+            id={deleteSelected}
+            ConfirmationDeleteButtonClick={ConfirmationDeleteButtonClick}
+          />
+        )}
     </>
   );
 };
@@ -307,30 +326,3 @@ const styles = {
   }
 };
 
-const dummyData = [
-  {
-    heading: "Mountain Sunset",
-    description: "A breathtaking view of the sunset behind a mountain range.",
-    imageURL: "https://example.com/images/mountain-sunset.jpg",
-    publishDate: "2023-01-15",
-    refURL: "https://example.com/article/mountain-sunset",
-    pdfFile: "https://example.com/pdfs/mountain-sunset.pdf"
-  },
-  {
-    heading: "Beach Paradise",
-    description: "Golden sands and crystal-clear waters make this beach a dream destination.",
-    imageURL: "https://example.com/images/beach-paradise.jpg",
-    publishDate: "2023-02-20",
-    refURL: "https://example.com/article/beach-paradise",
-    pdfFile: "https://example.com/pdfs/beach-paradise.pdf"
-  },
-  {
-    heading: "City Skyline",
-    description: "The dazzling lights of a vibrant city at night.",
-    imageURL: "https://example.com/images/city-skyline.jpg",
-    publishDate: "2023-03-10",
-    refURL: "https://example.com/article/city-skyline",
-    pdfFile: "https://example.com/pdfs/city-skyline.pdf"
-  }
-
-  ];

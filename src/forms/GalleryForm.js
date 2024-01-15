@@ -25,16 +25,13 @@ import {db,storage} from '../firebase';
 import { collection, addDoc } from "firebase/firestore";
 import "../App.css"
 import LoadingOverLay from '../components/loader/LoadingOverLay';
-const ResearchForm = (props) => {
+const GalleryForm = (props) => {
 
-  const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
+  const {openForm,setOpenForm} = props;
   const {userData} = useContext(ContextConsumer);
 
   const {register,control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
-    "title":dataToEditForm?.title ?? "",
-    "description":dataToEditForm?.description ?? "",
-    "type": dataToEditForm?.type ? researchType[dataToEditForm.type] : researchType[0],
 
     },
   });  
@@ -76,7 +73,7 @@ const ResearchForm = (props) => {
     if (!file) return;
     console.log("SECOND")
 
-    const storageRef = ref(storage, `files/${file.name}`);
+    const storageRef = ref(storage, `gallery/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on("state_changed",
@@ -92,29 +89,19 @@ const ResearchForm = (props) => {
       () => {
          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           setImgUrl(downloadURL)
-          console.log("image url UPLOAD--00",downloadURL)
-          console.log("THIRD")
           try {
 
             if (downloadURL) {
-              console.log("FORTH");
               const transformedData = {
                 imgURL: downloadURL,
-                title: data.title,
-                description: data.description,
-                type: data.type.id,
               };
         
-              console.log("image transformedData UPLOAD", transformedData);
         
-              const docRef =  await addDoc(collection(db, "research"), transformedData );
+              const docRef =  await addDoc(collection(db, "gallery"), transformedData );
               console.log("Document written with ID: ", docRef.id);
               if(docRef.id){
                 setLoading(false)
               }
-        
-              // Reset form or perform any other necessary actions
-              // e.target.reset();
               setImgUrl('');
             }
             
@@ -153,7 +140,7 @@ const ResearchForm = (props) => {
     <Dialog open={openForm}  maxWidth="md" fullWidth>
         <DialogTitle style={useStyles.dialogTitleStyle}>
             <Typography variant="h6" component="div" style={{ flexGrow: 1 }}>
-                    {isEditor ? "Update Research" : "Add Research"}
+                    Add Images
             </Typography>
 
             <CloseIcon onClick={() => OnCancel()} />
@@ -166,86 +153,7 @@ const ResearchForm = (props) => {
 
                 <Grid container style={{ maxHeight: 700, overflow: "auto",position:'relative' }}>
                   {loading && <LoadingOverLay show={loading}/>}
-                    <Grid item md={12} style={useStyles.root}>
-                        <Controller
-                            name="title"
-                            control={control}
-                            defaultValue=""
-                            rules={{ 
-                              required:"title is required"
-                            }}
-                            render={({ field }) => (
-                            <TextField
-                                {...field}
-                                size="small"
-                                id="outlined-basic" 
-                                label="title"
-                                variant="outlined"
-                                fullWidth
-                                error={!!errors.title}
-                                // helperText={errors.userName ? errors.userName.message : ''}
-                            />
-                            )}
-                        />
-                        <p style={useStyles.errorText}>{errors.title ? errors.title.message : ''}</p>
-                    </Grid>
-                    <Grid item md={12} style={useStyles.root}>
-                        <Controller
-                            name="description"
-                            control={control}
-                            defaultValue=""
-                            rules={{ required: 'Description is required' }}
-                            render={({ field }) => (
-                            <TextField
-                                {...field}
-                                size="small"
-                                id="outlined-basic" 
-                                label="Description"
-                                variant="outlined"
-                                fullWidth
-                                multiline
-                                rows={6}
-                                error={!!errors.description}
-                                // helperText={errors.userName ? errors.userName.message : ''}
-                            />
-                            )}
-                        />
-                        <p style={useStyles.errorText}>{errors.description ? errors.description.message : ''}</p>
-                    </Grid>
-                    <Grid item md={6} style={useStyles.root}>
-                      <Controller
-                          name="type"
-                          control={control}
-                          rules={{ required: "Type is required" }}
-                          render={({ field: { value, onChange } }) => (
-                            // <FormControl fullWidth>
-                            <Autocomplete
-                              id="type"
-                              options={researchType}
-                              value={value}
-                              getOptionLabel={(option) =>
-                                option.name !== null ? option.name : ""
-                              }
-                              style={useStyles.textfield}
-                              onChange={async (event, newValue) => {
-                                onChange(newValue);
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  size="small"
-                                  InputProps={{
-                                    ...params.InputProps,
-                                  }}
-                                  InputLabelProps={{ shrink: true }}
-                                  label="Research Type"
-                                />
-                              )}
-                            />
-                          )}
-                        />
-                        <p style={useStyles.errorText}>{errors.type ? errors.type.message : ''}</p>
-                    </Grid>
+
 
                     <Grid item md={6} style={useStyles.imageInputBox}>
                       <input
@@ -261,10 +169,10 @@ const ResearchForm = (props) => {
                         <p style={useStyles.errorText}>{errors.picture ? errors.picture.message : ''}</p>
                     </Grid>
 
-                    {isEditor === true || selectedFile ? (
+                    {selectedFile ? (
         <div style={{}}>
           <p>Selected Image Preview:</p>
-          <img src={selectedFile || dataToEditForm.imgURL} alt="Selected Preview" style={{width:'100%',height:'260px',objectFit: "cover" }} />
+          <img src={selectedFile} alt="Selected Preview" style={{width:'100%',height:'260px',objectFit: "cover" }} />
         </div>
       ):null}
 {/* backgroundSize: "cover",backgroundRepeat: "no-repeat",backgroundPosition: "center"  */}
@@ -281,7 +189,7 @@ const ResearchForm = (props) => {
                         Cancel
                     </Button>
                     <Button type="submit" style={useStyles.primarybutton}>
-                        {isEditor ? "Update" : "Save"}
+                        Save
                     </Button>
                 </Grid>
               </Grid>
@@ -297,7 +205,7 @@ const ResearchForm = (props) => {
   )
 }
 
-export default ResearchForm;
+export default GalleryForm;
 
 
 

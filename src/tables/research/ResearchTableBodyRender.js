@@ -40,8 +40,8 @@ const ResearchTableBodyRender = (props) => {
   return (
     <TableBody>
       {bodyData.map((data, index) => {
-        const isItemSelected = isSelected(data.Id);
-        const labelId = `enhanced-table-checkbox-${data.Id}`;
+        const isItemSelected = isSelected(data.id);
+        const labelId = `enhanced-table-checkbox-${data.id}`;
 
 
         return (
@@ -103,10 +103,10 @@ export default ResearchTableBodyRender;
     tableCellText: {
       fontWeight: 500,
       fontSize: "16px",
-      padding: "12px 4px",
+      padding: "12px 6px",
       // borderRight:"1px solid #B3B3B3",
       color: "#000000",
-      whiteSpace: "nowrap",
+      // whiteSpace: "nowrap",
     },
     tableCellSymbal: {
       padding: "0px 0px",

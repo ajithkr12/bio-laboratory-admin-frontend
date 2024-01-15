@@ -19,125 +19,65 @@ import { toast } from "react-toastify";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { collection, addDoc, updateDoc ,doc} from "firebase/firestore";
 
-import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import {db,storage} from '../firebase';
-import { collection, addDoc } from "firebase/firestore";
-import "../App.css"
-import LoadingOverLay from '../components/loader/LoadingOverLay';
-const ResearchForm = (props) => {
+
+import { dateStringFormaterToIST,dateStringFormaterToUST} from '../services/DateTimeServices';
+const CollaboratorForm = (props) => {
 
   const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
   const {userData} = useContext(ContextConsumer);
-
-  const {register,control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
+  const todayDate = new Date()
+  const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
-    "title":dataToEditForm?.title ?? "",
-    "description":dataToEditForm?.description ?? "",
-    "type": dataToEditForm?.type ? researchType[dataToEditForm.type] : researchType[0],
-
+    "collaboratorName":dataToEditForm?.collaboratorName ?? "",
+    "about":dataToEditForm?.about ?? "",
+    "organization": dataToEditForm?.organization ?? "",
+    "designation": dataToEditForm?.designation ?? "",
     },
   });  
-
-  const [imgUrl, setImgUrl] = useState('');
-  const [selectedFile, setSelectedFile] = useState('');
-
-  const [progresspercent, setProgresspercent] = useState(0);
 
   const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
   const [selectedTab, setSelectedTab] = useState(1);
-  const [loading , setLoading] = useState(false)
 
   const OnCancel = () => {
     setOpenForm(false);
   };
+  const onSubmit = async(data) => {
 
+    const transformedData = {
+      "collaboratorName" : data.collaboratorName,
+      "about" : data.about,
+      "organization" : data.organization,
+      "designation" : data.designation,
 
+    };
 
-  const onFileChange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedFile(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setSelectedFile(null);
-    }
-  };
-
-
-  const handlePostData = async(file,data) => {
-    console.log("FIRST")
-
-    if (!file) return;
-    console.log("SECOND")
-
-    const storageRef = ref(storage, `files/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on("state_changed",
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setProgresspercent(progress);
-        console.log("progresspercent",progress)
-
-      },
-      (error) => {
-        alert(error);
-      },
-      () => {
-         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          setImgUrl(downloadURL)
-          console.log("image url UPLOAD--00",downloadURL)
-          console.log("THIRD")
-          try {
-
-            if (downloadURL) {
-              console.log("FORTH");
-              const transformedData = {
-                imgURL: downloadURL,
-                title: data.title,
-                description: data.description,
-                type: data.type.id,
-              };
-        
-              console.log("image transformedData UPLOAD", transformedData);
-        
-              const docRef =  await addDoc(collection(db, "research"), transformedData );
-              console.log("Document written with ID: ", docRef.id);
-              if(docRef.id){
-                setLoading(false)
-              }
-        
-              // Reset form or perform any other necessary actions
-              // e.target.reset();
-              setImgUrl('');
-            }
-            
-          } catch (error) {
-                  console.error("Error handling upload or adding document: ", error);
-                  setLoading(false)
-
-          }
-
-
-        });
+    if(isEditor == true){
+      console.log("edit")
+      try {
+        console.log("edit")
+        const docRef = await updateDoc(doc(db, "collaborator",dataToEditForm.id), transformedData);
+        console.log("Document written with ID: ", docRef.id);
+        // e.target.reset();
+      } catch (e) {
+        console.error("Error adding document: ", e);
       }
-      
-    );
+    }else{
+      try {
+        const docRef = await addDoc(collection(db, "collaborator"), transformedData);
+        console.log("Document written with ID: ", docRef.id);
+        // e.target.reset();
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    }
 
-  }
 
-
-  const onSubmit = async(data, e) => {
-      console.log(data);
-      setLoading(true)
-      await handlePostData(data.picture[0],data);
-
+  
+    
   }
 
 
@@ -145,7 +85,7 @@ const ResearchForm = (props) => {
 
     console.log("RUN")
 
-  }, [reset]);
+  }, [reset, currentFormState]);
 
 
 
@@ -153,7 +93,7 @@ const ResearchForm = (props) => {
     <Dialog open={openForm}  maxWidth="md" fullWidth>
         <DialogTitle style={useStyles.dialogTitleStyle}>
             <Typography variant="h6" component="div" style={{ flexGrow: 1 }}>
-                    {isEditor ? "Update Research" : "Add Research"}
+                    {isEditor ? "Update Collaborator" : "Add Collaborator"}
             </Typography>
 
             <CloseIcon onClick={() => OnCancel()} />
@@ -164,15 +104,14 @@ const ResearchForm = (props) => {
 
         <DialogContent dividers>
 
-                <Grid container style={{ maxHeight: 700, overflow: "auto",position:'relative' }}>
-                  {loading && <LoadingOverLay show={loading}/>}
+                <Grid container style={{ maxHeight: 700, overflow: "auto" }}>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
-                            name="title"
+                            name="collaboratorName"
                             control={control}
                             defaultValue=""
                             rules={{ 
-                              required:"title is required"
+                              required:"collaboratorName is required"
                             }}
                             render={({ field }) => (
                             <TextField
@@ -182,92 +121,82 @@ const ResearchForm = (props) => {
                                 label="title"
                                 variant="outlined"
                                 fullWidth
-                                error={!!errors.title}
+                                multiline
+                                rows={3}
+                                error={!!errors.collaboratorName}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
                             )}
                         />
-                        <p style={useStyles.errorText}>{errors.title ? errors.title.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.collaboratorName ? errors.collaboratorName.message : ''}</p>
                     </Grid>
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
-                            name="description"
+                            name="about"
                             control={control}
                             defaultValue=""
-                            rules={{ required: 'Description is required' }}
+                            rules={{ required: 'about is required' ,}}
                             render={({ field }) => (
                             <TextField
                                 {...field}
                                 size="small"
                                 id="outlined-basic" 
-                                label="Description"
+                                label="About"
                                 variant="outlined"
                                 fullWidth
                                 multiline
                                 rows={6}
-                                error={!!errors.description}
+                                error={!!errors.about}
                                 // helperText={errors.userName ? errors.userName.message : ''}
                             />
                             )}
                         />
-                        <p style={useStyles.errorText}>{errors.description ? errors.description.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.about ? errors.about.message : ''}</p>
                     </Grid>
-                    <Grid item md={6} style={useStyles.root}>
-                      <Controller
-                          name="type"
-                          control={control}
-                          rules={{ required: "Type is required" }}
-                          render={({ field: { value, onChange } }) => (
-                            // <FormControl fullWidth>
-                            <Autocomplete
-                              id="type"
-                              options={researchType}
-                              value={value}
-                              getOptionLabel={(option) =>
-                                option.name !== null ? option.name : ""
-                              }
-                              style={useStyles.textfield}
-                              onChange={async (event, newValue) => {
-                                onChange(newValue);
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  size="small"
-                                  InputProps={{
-                                    ...params.InputProps,
-                                  }}
-                                  InputLabelProps={{ shrink: true }}
-                                  label="Research Type"
-                                />
-                              )}
+                    <Grid item md={12} style={useStyles.root}>
+                        <Controller
+                            name="organization"
+                            control={control}
+                            defaultValue=""
+                            rules={{ required: false}}
+                            render={({ field }) => (
+                            <TextField
+                                {...field}
+                                size="small"
+                                id="outlined-basic" 
+                                label="Organization Name"
+                                variant="outlined"
+                                fullWidth
+                                error={!!errors.organization}
+                                // helperText={errors.userName ? errors.userName.message : ''}
                             />
-                          )}
+                            )}
                         />
-                        <p style={useStyles.errorText}>{errors.type ? errors.type.message : ''}</p>
+                        <p style={useStyles.errorText}>{errors.organization ? errors.organization.message : ''}</p>
+                    </Grid>
+                    <Grid item md={12} style={useStyles.root}>
+                        <Controller
+                            name="designation"
+                            control={control}
+                            defaultValue=""
+                            rules={{ required: false}}
+                            render={({ field }) => (
+                            <TextField
+                                {...field}
+                                size="small"
+                                id="outlined-basic" 
+                                label="Designation"
+                                variant="outlined"
+                                fullWidth
+                                error={!!errors.designation}
+                                // helperText={errors.userName ? errors.userName.message : ''}
+                            />
+                            )}
+                        />
+                        <p style={useStyles.errorText}>{errors.designation ? errors.designation.message : ''}</p>
                     </Grid>
 
-                    <Grid item md={6} style={useStyles.imageInputBox}>
-                      <input
-                        {...register("picture", {
-                            required: "Picture is required",
-                            })}
-                        type="file"
-                        id="picture"
-                        onChange={onFileChange}
-                        style={useStyles.imageInput}
-                        accept="image/png , image/jpeg, image/webp"
-                      />
-                        <p style={useStyles.errorText}>{errors.picture ? errors.picture.message : ''}</p>
-                    </Grid>
 
-                    {isEditor === true || selectedFile ? (
-        <div style={{}}>
-          <p>Selected Image Preview:</p>
-          <img src={selectedFile || dataToEditForm.imgURL} alt="Selected Preview" style={{width:'100%',height:'260px',objectFit: "cover" }} />
-        </div>
-      ):null}
-{/* backgroundSize: "cover",backgroundRepeat: "no-repeat",backgroundPosition: "center"  */}
 
                 </Grid>
         </DialogContent>
@@ -297,7 +226,7 @@ const ResearchForm = (props) => {
   )
 }
 
-export default ResearchForm;
+export default CollaboratorForm;
 
 
 
@@ -393,27 +322,15 @@ const useStyles = {
     fontSize:'14px',
     lineHeight:'26px',
     height:"26px"
-  },
-  imageInputBox:{
-    display:'flex',
-    // alignItems:'center',
-    justifyContent:'center',
-    flexDirection: "column",
-    padding :'6px 24px'
-  },
-  imageInput:{
-    fontSize:'15px',
-    // color:'#0964b0'
   }
 };
 // style END
 
-const researchType = [
-  { id: 0, name: 'Endangered Species Ecology'},
-  { id: 1, name: 'Disease Ecology' },
+const publicationType = [
+  { id: 0, name: 'Peer'},
+  { id: 1, name: 'Books' },
 
 ];
-
 
 
 

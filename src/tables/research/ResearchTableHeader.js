@@ -58,6 +58,8 @@ export default ResearchTableHeader;
     tableCellText: {
       fontWeight: 700, 
       fontSize: "16px",
+      whiteSpace: "nowrap",
+
     },
     tableCellSymbal:{
       padding:"0px 0px",

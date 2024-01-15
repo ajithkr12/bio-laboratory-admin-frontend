@@ -4,7 +4,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import {colors} from "../../constants/ConstantColors"
 
-const PublicationTableHeader = (props) => {
+const CollaboratorTableHeader = (props) => {
 
 
 
@@ -46,7 +46,7 @@ const PublicationTableHeader = (props) => {
   );
 };
 
-export default PublicationTableHeader;
+export default CollaboratorTableHeader;
 
 
   // style START

@@ -8,8 +8,8 @@ import Table from "@mui/material/Table";
 import TableContainer from "@mui/material/TableContainer";
 import TablePagination from "@mui/material/TablePagination";
 
-import ResearchTableHeader from "../tables/research/ResearchTableHeader";
-import ResearchTableBodyRender from "../tables/research/ResearchTableBodyRender";
+import CollaboratorTableHeader from "../tables/collaborator/CollaboratorTableHeader";
+import CollaboratorTableBodyRender from "../tables/collaborator/CollaboratorTableBodyRender";
 import { ContextConsumer } from "../utils/Context";
 import { AiOutlinePlus } from 'react-icons/ai';
 
@@ -19,12 +19,12 @@ import LoadingOverLay from "../components/loader/LoadingOverLay";
 import SearchBox from "../components/SearchBox";
 import { colors } from "../constants/ConstantColors";
 
-import ResearchForm from "../forms/ResearchForm"
+import CollaboratorForm from "../forms/CollaboratorForm"
 import {db} from '../firebase';
 import { collection, deleteDoc, getDocs,doc } from "firebase/firestore";
 import DeleteConfirmation from "../components/DeleteConfirmation";
 
-ResearchTableHeader.propTypes = {
+CollaboratorTableHeader.propTypes = {
   numSelected: PropTypes.number.isRequired,
   // onRequestSort: PropTypes.func.isRequired,
   onSelectAllClick: PropTypes.func.isRequired,
@@ -34,12 +34,14 @@ ResearchTableHeader.propTypes = {
 };
 // Props for table END
 
-const ResearchList = (props) => {
+const CollaboratorList = (props) => {
   const TableHeaderArray = [
     "Sl No",
-    "Heading",
-    "Description",
-    "Image"
+    "Collaborator Name",
+    "Organization",
+    "Designation",
+    "About",
+    // "PDF"
   ];
   // const {searchTerm} = props;
   const {userData } = useContext(ContextConsumer);
@@ -128,7 +130,7 @@ const ResearchList = (props) => {
 
 
   const ConfirmationDeleteButtonClick = async (id) => {
-    await deleteDoc(doc(db, "research",id));
+    await deleteDoc(doc(db, "collaborator",id));
     initialFetch();
     setOpenDeleteConfirmation(false);
   };
@@ -163,7 +165,7 @@ const ResearchList = (props) => {
 
     setRowsPerPage(0);
     setLoading(true);
-    await getDocs(collection(db, "research"))
+    await getDocs(collection(db, "collaborator"))
     .then((querySnapshot)=>{               
         const newData = querySnapshot.docs
             .map((doc) => ({...doc.data(), id:doc.id }));
@@ -188,8 +190,8 @@ const ResearchList = (props) => {
           // Check if searchTerm contains only numeric characters for phone search
           if (
             /^[a-zA-Z0-9\s]+$/.test(searchTerm) &&
-            data.heading &&
-            data.heading.toLowerCase().includes(searchTerm)
+            data.title &&
+            data.title.toLowerCase().includes(searchTerm)
           ) {
             return true;
           }
@@ -220,7 +222,7 @@ const ResearchList = (props) => {
 
 
       <Button variant="outlined" startIcon={<AiOutlinePlus />} onClick={() => handleOpenForm()} style={{color:colors.primaryColor,borderColor:colors.primaryColor}}>
-        Add Research
+        Add Collaborator
       </Button>
     </div>
 
@@ -259,13 +261,13 @@ const ResearchList = (props) => {
             },
           }}
         >
-          <ResearchTableHeader
+          <CollaboratorTableHeader
             TableHeaderArray={TableHeaderArray}
             numSelected={selected.length}
             rowCount={fetchData.length}
           />
 
-          <ResearchTableBodyRender
+          <CollaboratorTableBodyRender
             bodyData={_finalFetchData}
             DeleteClick={DeleteClick}
             EditClick={EditClick}
@@ -288,14 +290,14 @@ const ResearchList = (props) => {
     </div>
     </Grid>
     {openForm && 
-        <ResearchForm 
+        <CollaboratorForm 
             openForm = {openForm}
             setOpenForm = {setOpenForm}
             isEditor = {isEditor}
             dataToEditForm = {dataToEditForm}
         />
     }
-            {openDeleteConfirmation && (
+        {openDeleteConfirmation && (
           <DeleteConfirmation
             message={"You want to delete selected item ?"}
             OpenStatus={openDeleteConfirmation}
@@ -308,7 +310,7 @@ const ResearchList = (props) => {
   );
 };
 
-export default ResearchList;
+export default CollaboratorList;
 
 const styles = {
 
