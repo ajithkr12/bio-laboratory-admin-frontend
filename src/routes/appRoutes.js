@@ -5,7 +5,7 @@ import Publication from "../screens/Publication";
 import Members from "../screens/Members";
 import Collaborator from "../screens/Collaborators";
 import Gallery from "../screens/Gallery";
-
+import Message from "../screens/Message";
 import { AiFillHome } from "react-icons/ai";
 
 
@@ -67,6 +67,15 @@ const appRoutes= [
     state: "gallery",
     sidebarProps: {
       displayText: "Gallary #",
+      icon: <AiFillHome style={{fontSize:'22px'}}/>
+    }
+  },
+  {
+    path: "/message",
+    element: <Message />,
+    state: "message",
+    sidebarProps: {
+      displayText: "Messages #",
       icon: <AiFillHome style={{fontSize:'22px'}}/>
     }
   },
