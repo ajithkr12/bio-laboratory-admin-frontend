@@ -4,13 +4,19 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDGq9VxO7m0ViCq2j2P31Vq5lvmWZUW-ro",
-    authDomain: "bio-lab-65b9b.firebaseapp.com",
-    projectId: "bio-lab-65b9b",
-    storageBucket: "bio-lab-65b9b.appspot.com",
-    messagingSenderId: "577587998243",
-    appId: "1:577587998243:web:a39ceacb172cfe919acb96",
-    measurementId: "G-EMZ271Y78V"
+    // apiKey: "AIzaSyDGq9VxO7m0ViCq2j2P31Vq5lvmWZUW-ro",
+    // authDomain: "bio-lab-65b9b.firebaseapp.com",
+    // projectId: "bio-lab-65b9b",
+    // storageBucket: "bio-lab-65b9b.appspot.com",
+    // messagingSenderId: "577587998243",
+    // appId: "1:577587998243:web:a39ceacb172cfe919acb96",
+    // measurementId: "G-EMZ271Y78V"
+    apiKey: "AIzaSyB4wfP4Jaj8dt1me8ou4k20pqlJrzNh56g",
+    authDomain: "bio-lab-fd574.firebaseapp.com",
+    projectId: "bio-lab-fd574",
+    storageBucket: "bio-lab-fd574.appspot.com",
+    messagingSenderId: "673508428347",
+    appId: "1:673508428347:web:e1a830c10e5ea1f7bdea1e"
 };
  
 
