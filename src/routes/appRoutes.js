@@ -7,28 +7,34 @@ import Collaborator from "../screens/Collaborators";
 import Gallery from "../screens/Gallery";
 import Message from "../screens/Message";
 import { AiFillHome } from "react-icons/ai";
+import { HiClipboardDocumentList } from "react-icons/hi2";
+import { GiTeamIdea } from "react-icons/gi";
+import { RiTeamFill } from "react-icons/ri";
+import { RiGalleryFill } from "react-icons/ri";
+import { MdMessage } from "react-icons/md";
+import { MdFindInPage } from "react-icons/md";
 
 
 const appRoutes= [
 
-  {
-    path: "/home",
-    element: <Home />,
-    state: "home",
-    sidebarProps: {
-      displayText: "Home",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
-    }
-  },
+  // {
+  //   path: "/",
+  //   element: <Home />,
+  //   state: "home",
+  //   sidebarProps: {
+  //     displayText: "Home",
+  //     icon: <AiFillHome style={{fontSize:'22px'}}/>
+  //   }
+  // },
 
 
   {
-    path: "/research",
+    path: "/",
     element: <Research />,
     state: "research",
     sidebarProps: {
       displayText: "Research #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <MdFindInPage style={{fontSize:'22px'}}/>
     }
   },
 
@@ -39,7 +45,7 @@ const appRoutes= [
     state: "publication",
     sidebarProps: {
       displayText: "Publication #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <HiClipboardDocumentList style={{fontSize:'22px'}}/>
     }
   },
   {
@@ -48,7 +54,7 @@ const appRoutes= [
     state: "collaborator",
     sidebarProps: {
       displayText: "Collaborators #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <GiTeamIdea style={{fontSize:'22px'}}/>
     }
   },
 
@@ -58,7 +64,7 @@ const appRoutes= [
     state: "members",
     sidebarProps: {
       displayText: "Members #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <RiTeamFill style={{fontSize:'22px'}}/>
     }
   },
   {
@@ -67,7 +73,7 @@ const appRoutes= [
     state: "gallery",
     sidebarProps: {
       displayText: "Gallary #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <RiGalleryFill style={{fontSize:'22px'}}/>
     }
   },
   {
@@ -76,7 +82,7 @@ const appRoutes= [
     state: "message",
     sidebarProps: {
       displayText: "Messages #",
-      icon: <AiFillHome style={{fontSize:'22px'}}/>
+      icon: <MdMessage style={{fontSize:'22px'}}/>
     }
   },
 ];
