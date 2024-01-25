@@ -304,7 +304,7 @@ const MemberForm = (props) => {
                 name="email"
                 control={control}
                 defaultValue=""
-                rules={{ required: "E-Mail is required" }}
+                // rules={{ required: "E-Mail is required" }}
                 render={({ field }) => (
                   <TextField
                     {...field}

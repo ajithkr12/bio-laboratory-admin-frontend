@@ -87,7 +87,7 @@ const MemberTableBodyRender = (props) => {
               {data.about}
             </TableCell>
             <TableCell align="center" style={useStyles.tableCellText}>
-              {data.email}
+              {data?.email ? data.email : "Email ID Not Available"}
             </TableCell>
             <TableCell align="center" style={useStyles.tableCellText}>
               <img src={data.imgURL ? data.imgURL : dummy} alt="research image" width="40" height="40" style={{ borderRadius: '20px' }}/>
