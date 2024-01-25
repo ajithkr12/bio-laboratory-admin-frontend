@@ -597,13 +597,15 @@ const designationType = [
   { id: 7, name: "DBT RA "},
   { id: 8 , name:"Project SRF"},
 
-  { id: 9, name: "DST Inspire Faculty" },
+  { id: 9, name: "DST Inspire Fellow" },
   { id: 10, name: "Project Asst II  " },
   { id: 11, name: "Project RA 1  "},
   { id: 12 , name:"Technical Assistant "},
   { id: 13 , name:"Project Based Student Trainee"},
 
-  { id: 14 , name:"SR. TECHNICAL OFFICER"}
+  { id: 14 , name:"SR. TECHNICAL OFFICER"},
+  { id: 15 , name:"Project Associate"}
+
 
 
 
