@@ -2,17 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import Button from "@mui/material/Button";
-import { Autocomplete, FormControl } from "@mui/material";
+import { Autocomplete } from "@mui/material";
 import { Grid, Typography, TextField } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { AiOutlinePlus, AiFillDelete } from "react-icons/ai";
-import IconButton from "@mui/material/IconButton";
 import { colors } from "../constants/ConstantColors";
 
-import { addConsignment } from "../apis/ConsignmentServices";
 import { ContextConsumer } from "../utils/Context";
 import ToastNotification from "../components/ToastNotification";
 import { toast } from "react-toastify";
@@ -26,7 +22,7 @@ import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import "../App.css";
 import LoadingOverLay from "../components/loader/LoadingOverLay";
 const MemberForm = (props) => {
-  const { isEditor, openForm, setOpenForm, dataToEditForm } = props;
+  const { isEditor, openForm, setOpenForm, dataToEditForm ,initialFetch} = props;
   const { userData } = useContext(ContextConsumer);
 
   const {
@@ -56,14 +52,10 @@ const MemberForm = (props) => {
     },
   });
 
-  const [imgUrl, setImgUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState("");
 
-  const [progresspercent, setProgresspercent] = useState(0);
 
-  const [errorMeassage, setErrorMeassage] = useState("");
   const currentFormState = watch();
-  const [selectedTab, setSelectedTab] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const OnCancel = () => {
@@ -85,29 +77,23 @@ const MemberForm = (props) => {
   };
 
   const handlePostData = async (file, data) => {
-    console.log("FIRST");
 
     
     if(data.type.id === 0){
       if (!file) return;
     }
-    console.log("SECOND");
     var downloadURL="";
     const date = data.dateSelector.toString();
     const timestampNow = Date.now();
     if(data.type.id === 0){
-      console.log("THIRD 1");
       const storageRef = ref(storage, `members/${timestampNow}`);
       const uploadTask = await uploadBytesResumable(storageRef, file);
-      console.log("THIRD 2");
       downloadURL = await getDownloadURL(uploadTask.ref);
-      console.log("THIRD 3");
 
     }
 
 
     try {
-        console.log("FORTH");
 
         const transformedData = {
           imgURL: downloadURL,
@@ -121,14 +107,34 @@ const MemberForm = (props) => {
         };
 
         const docRef = await addDoc(collection(db, "members"),transformedData);
-        console.log("Document written with ID: ", docRef.id);
         if (docRef.id) {
-          setLoading(false);
+          setLoading(false)
+          initialFetch();
+          toast.success("Successfully Added", {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          setTimeout(() => {
+            setOpenForm(false);
+          }, 2000);
         }
 
     } catch (error) {
-      console.error("Error handling upload or adding document: ", error);
-      setLoading(false);
+      setLoading(false)
+      toast.error(`Failed : ${error} `, {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
 
 
@@ -136,12 +142,10 @@ const MemberForm = (props) => {
 
   // hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
   const handleUpdateData = async (data) => {
-    console.log("FIRST");
 
     if(data.type.id === 0){
       if (!data.picture[0] && !dataToEditForm.imgURL) return;
     }
-    console.log("SECOND");
 
     var downloadURL= null;
     const date = data.dateSelector.toString();
@@ -150,8 +154,6 @@ const MemberForm = (props) => {
       const storageRef = ref(storage, `members/${timestampNow}`);
       const uploadTask =await uploadBytesResumable(storageRef, data.picture[0]);
       downloadURL = await getDownloadURL(uploadTask.ref);
-      console.log("uploadTask : ", uploadTask)
-      console.log("uploadTask url: ", downloadURL)
       
     }
 
@@ -166,17 +168,40 @@ const MemberForm = (props) => {
       resignationYear : date
 
     };
+    try {
+      const docRef = await updateDoc(doc(db, "members", dataToEditForm.id),transformedData);
+      setLoading(false);
+      initialFetch()
+      toast.success("Successfully Updated", {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      setTimeout(() => {
+        setOpenForm(false);
+      }, 2000);
+      
+    } catch (error) {
+      setLoading(false);
+      toast.error(`Failed : ${error} `, {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
 
-    const docRef = await updateDoc(doc(db, "members", dataToEditForm.id),transformedData);
-    
-    setLoading(false);
-
-    console.log("docRef : ", docRef)
 
   };
 
   const onSubmit = async (data, e) => {
-    console.log(data);
     setLoading(true);
     if (isEditor !== true) {
       await handlePostData(data.picture[0], data);
@@ -186,7 +211,6 @@ const MemberForm = (props) => {
   };
 
   useEffect(() => {
-    console.log("RUN");
   }, [reset]);
 
   return (
@@ -232,31 +256,9 @@ const MemberForm = (props) => {
                 {errors.name ? errors.name.message : ""}
               </p>
             </Grid>
-            {/* <Grid item md={12} style={useStyles.root}>
-              <Controller
-                name="designation"
-                control={control}
-                defaultValue=""
-                rules={{ required: "Designation is required" }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    size="small"
-                    id="outlined-basic"
-                    label="Designation"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.designation}
-                    // helperText={errors.userName ? errors.userName.message : ''}
-                  />
-                )}
-              />
-              <p style={useStyles.errorText}>
-                {errors.designation ? errors.designation.message : ""}
-              </p>
-            </Grid> */}
 
-<Grid item md={12} style={useStyles.root}>
+
+            <Grid item md={12} style={useStyles.root}>
               <Controller
                 name="designation"
                 control={control}
@@ -606,150 +608,3 @@ const designationType = [
 
 
 ];
-{
-  /* <Grid item md={2} style={useStyles.root}>
-<Controller
-    name="serviceId"
-    control={control}
-    rules={{ required: 'Service Type is required' }}
-    render={({ field: { value, onChange } }) => (
-      // <FormControl fullWidth>
-        <Autocomplete
-          disableClearable
-          id="serviceId"
-          options={services}
-          value={value}
-          getOptionLabel={(option) =>
-            option.name !== null ? option.name : ""
-          }
-          style={useStyles.textfield}
-          onChange={async (event, newValue) => {
-            onChange(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                // type: "search",
-              }}
-              // InputLabelProps={{ shrink: true }}
-              label="Service Type"
-
-            />
-          )}
-        />
-      // </FormControl>
-    )}
-  />
-  <p style={useStyles.errorText}>{errors.serviceType ? errors.serviceType.message : ''}</p>
-</Grid> */
-}
-
-
-
-    // uploadTask.on(
-    //   "state_changed",
-    //   (snapshot) => {
-    //     const progress = Math.round(
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //     );
-    //     setProgresspercent(progress);
-    //     console.log("progresspercent", progress);
-    //   },
-    //   (error) => {
-    //     alert(error);
-    //   },
-    //   () => {
-    //     getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-    //       setImgUrl(downloadURL);
-    //       console.log("image url UPLOAD--00", downloadURL);
-    //       console.log("THIRD");
-    //       try {
-    //         if (downloadURL || file) {
-    //           console.log("FORTH");
-    //           const transformedData = {
-    //             imgURL: file ? downloadURL : dataToEditForm.imgURL,
-    //             title: data.title,
-    //             description: data.description,
-    //             type: data.type.id,
-    //           };
-
-    //           console.log("image transformedData UPLOAD", transformedData);
-
-    //           const docRef = await updateDoc(
-    //             doc(db, "research", dataToEditForm.id),
-    //             transformedData
-    //           );
-    //           console.log("Document written with ID: ", docRef.id);
-    //           if (docRef.id) {
-    //             setLoading(false);
-    //           }
-
-    //           // Reset form or perform any other necessary actions
-    //           // e.target.reset();
-    //           setImgUrl("");
-    //         }
-    //       } catch (error) {
-    //         console.error("Error handling upload or adding document: ", error);
-    //         setLoading(false);
-    //       }
-    //     });
-    //   }
-    // );
-
-
-
-
-    // uploadTask.on(
-    //   "state_changed",
-    //   (snapshot) => {
-    //     const progress = Math.round(
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //     );
-    //     setProgresspercent(progress);
-    //     console.log("progresspercent", progress);
-    //   },
-    //   (error) => {
-    //     alert(error);
-    //   },
-    //   () => {
-    //     getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-    //       setImgUrl(downloadURL);
-    //       console.log("image url UPLOAD--00", downloadURL);
-    //       console.log("THIRD");
-    //       try {
-    //         if (downloadURL) {
-    //           console.log("FORTH");
-    //           const transformedData = {
-    //             imgURL: downloadURL,
-    //             name: data.name,
-    //             designation: data.designation,
-    //             type: data.type.id,
-    //             email : data.email,
-    //             about : data.about,
-    //           };
-
-    //           console.log("image transformedData UPLOAD", transformedData);
-
-    //           const docRef = await addDoc(
-    //             collection(db, "members"),
-    //             transformedData
-    //           );
-    //           console.log("Document written with ID: ", docRef.id);
-    //           if (docRef.id) {
-    //             setLoading(false);
-    //           }
-
-    //           // Reset form or perform any other necessary actions
-    //           // e.target.reset();
-    //           setImgUrl("");
-    //         }
-    //       } catch (error) {
-    //         console.error("Error handling upload or adding document: ", error);
-    //         setLoading(false);
-    //       }
-    //     });
-    //   }
-    // );

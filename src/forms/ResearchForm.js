@@ -2,23 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import Button from "@mui/material/Button";
-import { Autocomplete, FormControl } from "@mui/material";
+import { Autocomplete, } from "@mui/material";
 import { Grid, Typography, TextField } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { AiOutlinePlus, AiFillDelete } from "react-icons/ai";
-import IconButton from "@mui/material/IconButton";
 import { colors } from "../constants/ConstantColors";
 
-import { addConsignment } from "../apis/ConsignmentServices";
 import { ContextConsumer } from "../utils/Context";
 import ToastNotification from "../components/ToastNotification";
 import { toast } from "react-toastify";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { db, storage } from "../firebase";
@@ -26,7 +19,7 @@ import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import "../App.css";
 import LoadingOverLay from "../components/loader/LoadingOverLay";
 const ResearchForm = (props) => {
-  const { isEditor, openForm, setOpenForm, dataToEditForm } = props;
+  const { isEditor, openForm, setOpenForm, dataToEditForm ,initialFetch} = props;
   const { userData } = useContext(ContextConsumer);
 
   const {
@@ -52,9 +45,7 @@ const ResearchForm = (props) => {
 
   const [progresspercent, setProgresspercent] = useState(0);
 
-  const [errorMeassage, setErrorMeassage] = useState("");
   const currentFormState = watch();
-  const [selectedTab, setSelectedTab] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const OnCancel = () => {
@@ -76,10 +67,8 @@ const ResearchForm = (props) => {
   };
 
   const handlePostData = async (file, data) => {
-    console.log("FIRST");
 
     if (!file) return;
-    console.log("SECOND");
     const timestampNow = Date.now();
     const storageRef = ref(storage, `files/${timestampNow}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -91,7 +80,6 @@ const ResearchForm = (props) => {
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         );
         setProgresspercent(progress);
-        console.log("progresspercent", progress);
       },
       (error) => {
         alert(error);
@@ -99,11 +87,9 @@ const ResearchForm = (props) => {
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           setImgUrl(downloadURL);
-          console.log("image url UPLOAD--00", downloadURL);
-          console.log("THIRD");
+
           try {
             if (downloadURL) {
-              console.log("FORTH");
               const transformedData = {
                 imgURL: downloadURL,
                 title: data.title,
@@ -111,15 +97,26 @@ const ResearchForm = (props) => {
                 type: data.type.id,
               };
 
-              console.log("image transformedData UPLOAD", transformedData);
 
               const docRef = await addDoc(
                 collection(db, "research"),
                 transformedData
               );
-              console.log("Document written with ID: ", docRef.id);
               if (docRef.id) {
                 setLoading(false);
+                initialFetch()
+                toast.success("Successfully Added", {
+                  position: "top-center",
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "colored",
+                });
+                setTimeout(() => {
+                  setOpenForm(false);
+                }, 2000);
               }
 
               // Reset form or perform any other necessary actions
@@ -127,8 +124,16 @@ const ResearchForm = (props) => {
               setImgUrl("");
             }
           } catch (error) {
-            console.error("Error handling upload or adding document: ", error);
             setLoading(false);
+            toast.error(`Failed : ${error} `, {
+              position: "top-center",
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+            });
           }
         });
       }
@@ -137,10 +142,8 @@ const ResearchForm = (props) => {
 
   // hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
   const handleUpdateData = async (file, data) => {
-    console.log("FIRST");
 
     if (!file && !dataToEditForm.imgURL) return;
-    console.log("SECOND");
 
     var downloadURL="";
     const timestampNow = Date.now();
@@ -148,8 +151,7 @@ const ResearchForm = (props) => {
       const storageRef = ref(storage, `files/${timestampNow}`);
       const uploadTask =await uploadBytesResumable(storageRef, file);
       downloadURL = await getDownloadURL(uploadTask.ref);
-      console.log("uploadTask : ", uploadTask)
-      console.log("uploadTask url: ", downloadURL)
+
       
     }
 
@@ -160,26 +162,53 @@ const ResearchForm = (props) => {
       type: data.type.id,
     };
 
-    const docRef = await updateDoc(doc(db, "research", dataToEditForm.id),transformedData);
-    
-    setLoading(false);
+    try {
+      const docRef = await updateDoc(doc(db, "research", dataToEditForm.id),transformedData);
+      setLoading(false);
+      initialFetch()
+      toast.success("Successfully Updated", {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      setTimeout(() => {
+        setOpenForm(false);
+      }, 2000);
 
-    console.log("docRef : ", docRef)
+      
+    } catch (error) {
+      setLoading(false);
+      toast.error(`Failed : ${error} `, {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+    }
+
+
 
   };
 
   const onSubmit = async (data, e) => {
-    console.log(data);
     setLoading(true);
+    var response
     if (isEditor !== true) {
-      await handlePostData(data.picture[0], data);
+      response = await handlePostData(data.picture[0], data);
     } else {
-      await handleUpdateData(data.picture[0], data);
+      response = await handleUpdateData(data.picture[0], data);
     }
   };
 
   useEffect(() => {
-    console.log("RUN");
   }, [reset]);
 
   return (
@@ -440,96 +469,3 @@ const researchType = [
   { id: 0, name: "Endangered Species Ecology" },
   { id: 1, name: "Disease Ecology" },
 ];
-
-{
-  /* <Grid item md={2} style={useStyles.root}>
-<Controller
-    name="serviceId"
-    control={control}
-    rules={{ required: 'Service Type is required' }}
-    render={({ field: { value, onChange } }) => (
-      // <FormControl fullWidth>
-        <Autocomplete
-          disableClearable
-          id="serviceId"
-          options={services}
-          value={value}
-          getOptionLabel={(option) =>
-            option.name !== null ? option.name : ""
-          }
-          style={useStyles.textfield}
-          onChange={async (event, newValue) => {
-            onChange(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                // type: "search",
-              }}
-              // InputLabelProps={{ shrink: true }}
-              label="Service Type"
-
-            />
-          )}
-        />
-      // </FormControl>
-    )}
-  />
-  <p style={useStyles.errorText}>{errors.serviceType ? errors.serviceType.message : ''}</p>
-</Grid> */
-}
-
-
-
-    // uploadTask.on(
-    //   "state_changed",
-    //   (snapshot) => {
-    //     const progress = Math.round(
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //     );
-    //     setProgresspercent(progress);
-    //     console.log("progresspercent", progress);
-    //   },
-    //   (error) => {
-    //     alert(error);
-    //   },
-    //   () => {
-    //     getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-    //       setImgUrl(downloadURL);
-    //       console.log("image url UPLOAD--00", downloadURL);
-    //       console.log("THIRD");
-    //       try {
-    //         if (downloadURL || file) {
-    //           console.log("FORTH");
-    //           const transformedData = {
-    //             imgURL: file ? downloadURL : dataToEditForm.imgURL,
-    //             title: data.title,
-    //             description: data.description,
-    //             type: data.type.id,
-    //           };
-
-    //           console.log("image transformedData UPLOAD", transformedData);
-
-    //           const docRef = await updateDoc(
-    //             doc(db, "research", dataToEditForm.id),
-    //             transformedData
-    //           );
-    //           console.log("Document written with ID: ", docRef.id);
-    //           if (docRef.id) {
-    //             setLoading(false);
-    //           }
-
-    //           // Reset form or perform any other necessary actions
-    //           // e.target.reset();
-    //           setImgUrl("");
-    //         }
-    //       } catch (error) {
-    //         console.error("Error handling upload or adding document: ", error);
-    //         setLoading(false);
-    //       }
-    //     });
-    //   }
-    // );

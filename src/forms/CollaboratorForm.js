@@ -2,33 +2,27 @@ import React , {useContext,useEffect,useState} from 'react'
 import { useForm, Controller } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import { Autocomplete,FormControl } from '@mui/material';
 import { Grid,Typography,TextField } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { AiOutlinePlus,AiFillDelete } from 'react-icons/ai';
-import IconButton from "@mui/material/IconButton";
 import { colors } from '../constants/ConstantColors';
 
-import { addConsignment } from '../apis/ConsignmentServices';
 import { ContextConsumer } from '../utils/Context';
 import ToastNotification from '../components/ToastNotification';
 import { toast } from "react-toastify";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { collection, addDoc, updateDoc ,doc} from "firebase/firestore";
 
 import {db,storage} from '../firebase';
 
-import { dateStringFormaterToIST,dateStringFormaterToUST} from '../services/DateTimeServices';
+import LoadingOverLay from '../components/loader/LoadingOverLay';
+
+
 const CollaboratorForm = (props) => {
 
-  const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
+  const {isEditor,openForm,setOpenForm,dataToEditForm,initialFetch} = props;
   const {userData} = useContext(ContextConsumer);
-  const todayDate = new Date()
+
   const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
     "collaboratorName":dataToEditForm?.collaboratorName ?? "",
@@ -38,9 +32,8 @@ const CollaboratorForm = (props) => {
     },
   });  
 
-  const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
-  const [selectedTab, setSelectedTab] = useState(1);
+  const [loading , setLoading] = useState(false)
 
   const OnCancel = () => {
     setOpenForm(false);
@@ -56,34 +49,74 @@ const CollaboratorForm = (props) => {
     };
 
     if(isEditor == true){
-      console.log("edit")
       try {
-        console.log("edit")
         const docRef = await updateDoc(doc(db, "collaborator",dataToEditForm.id), transformedData);
-        console.log("Document written with ID: ", docRef.id);
         // e.target.reset();
+        setLoading(false);
+        initialFetch();
+        toast.success("Successfully Updated", {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        setTimeout(() => {
+          setOpenForm(false);
+        }, 2000);
       } catch (e) {
-        console.error("Error adding document: ", e);
+        setLoading(false);
+        toast.error(`Failed : ${e} `, {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       }
     }else{
       try {
         const docRef = await addDoc(collection(db, "collaborator"), transformedData);
-        console.log("Document written with ID: ", docRef.id);
-        // e.target.reset();
+        if(docRef.id){
+          setLoading(false)
+          initialFetch();
+          toast.success("Successfully Added", {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          setTimeout(() => {
+            setOpenForm(false);
+          }, 2000);
+        }
       } catch (e) {
-        console.error("Error adding document: ", e);
+        setLoading(false)
+        toast.error(`Failed : ${e} `, {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       }
     }
 
-
-  
     
   }
 
 
   useEffect(() => {
 
-    console.log("RUN")
 
   }, [reset, currentFormState]);
 
@@ -104,7 +137,8 @@ const CollaboratorForm = (props) => {
 
         <DialogContent dividers>
 
-                <Grid container style={{ maxHeight: 700, overflow: "auto" }}>
+                <Grid container style={{ maxHeight: 700, overflow: "auto",position:'relative' }}>
+                    {loading && <LoadingOverLay show={loading}/>}
                     <Grid item md={12} style={useStyles.root}>
                         <Controller
                             name="collaboratorName"
@@ -326,54 +360,5 @@ const useStyles = {
 };
 // style END
 
-const publicationType = [
-  { id: 0, name: 'Peer'},
-  { id: 1, name: 'Books' },
-
-];
 
 
-
-
-
-
-
-
-{/* <Grid item md={2} style={useStyles.root}>
-<Controller
-    name="serviceId"
-    control={control}
-    rules={{ required: 'Service Type is required' }}
-    render={({ field: { value, onChange } }) => (
-      // <FormControl fullWidth>
-        <Autocomplete
-          disableClearable
-          id="serviceId"
-          options={services}
-          value={value}
-          getOptionLabel={(option) =>
-            option.name !== null ? option.name : ""
-          }
-          style={useStyles.textfield}
-          onChange={async (event, newValue) => {
-            onChange(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                // type: "search",
-              }}
-              // InputLabelProps={{ shrink: true }}
-              label="Service Type"
-
-            />
-          )}
-        />
-      // </FormControl>
-    )}
-  />
-  <p style={useStyles.errorText}>{errors.serviceType ? errors.serviceType.message : ''}</p>
-</Grid> */}

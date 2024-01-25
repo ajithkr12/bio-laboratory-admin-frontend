@@ -104,7 +104,6 @@ const MemberList = (props) => {
   };
 
   const OpenDetailedClick = (event) => {
-    console.log("next page", event);
     // setLoginUser(event)
     // navigate(`/${event.id}`);
     navigate(`/device-list/${event.id}`);
@@ -116,7 +115,6 @@ const MemberList = (props) => {
 
 
   const EditClick = (event) => {
-    console.log("edit : ", event);
     setIsEditor(true)
     setDataToEditForm(event);
     setOpenForm(true);
@@ -125,7 +123,6 @@ const MemberList = (props) => {
   const DeleteClick = async (event) => {
     setDeleteSelected(event.id);
     setOpenDeleteConfirmation(true);
-    console.log("Single Delete : ", event.id);
 
   };
 
@@ -172,7 +169,7 @@ const MemberList = (props) => {
             .map((doc) => ({...doc.data(), id:doc.id }));
             setFetchData(newData);                
     })
-    setRowsPerPage(12);
+    setRowsPerPage(8);
     setLoading(false);
   };
 
@@ -191,8 +188,8 @@ const MemberList = (props) => {
           // Check if searchTerm contains only numeric characters for phone search
           if (
             /^[a-zA-Z0-9\s]+$/.test(searchTerm) &&
-            data.heading &&
-            data.heading.toLowerCase().includes(searchTerm)
+            data.name &&
+            data.name.toLowerCase().includes(searchTerm)
           ) {
             return true;
           }
@@ -278,7 +275,7 @@ const MemberList = (props) => {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[6, 12]}
+        rowsPerPageOptions={[8]}
         component="div"
         count={filteredFetchData.length}
         rowsPerPage={rowsPerPage}
@@ -296,6 +293,7 @@ const MemberList = (props) => {
             setOpenForm = {setOpenForm}
             isEditor = {isEditor}
             dataToEditForm = {dataToEditForm}
+            initialFetch = {initialFetch}
         />
     }
             {openDeleteConfirmation && (

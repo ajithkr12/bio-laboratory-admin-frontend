@@ -106,7 +106,7 @@ const Header = (props) => {
               }}
             />
           </Box>
-          <Box>
+          {/* <Box>
               <>
                 <Typography
                   style={{ fontSize: "14px" }}
@@ -123,7 +123,7 @@ const Header = (props) => {
                 </Typography>
               </>
           
-          </Box>
+          </Box> */}
         </Stack>
         <div style={{ width: 40 }} />
       </Toolbar>

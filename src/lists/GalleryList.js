@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 
 import { Grid } from "@mui/material";
@@ -46,7 +45,6 @@ const GalleryList = (props) => {
   const DeleteClick = async (event) => {
     setDeleteSelected(event.id);
     setOpenDeleteConfirmation(true);
-    console.log("Single Delete : ", event.id);
 
   };
 
@@ -127,6 +125,7 @@ const GalleryList = (props) => {
         <GalleryForm 
             openForm = {openForm}
             setOpenForm = {setOpenForm}
+            initialFetch= {initialFetch}
         />
     }
         {openDeleteConfirmation && (

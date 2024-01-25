@@ -33,7 +33,7 @@ const appRoutes= [
     element: <Research />,
     state: "research",
     sidebarProps: {
-      displayText: "Research #",
+      displayText: "Research",
       icon: <MdFindInPage style={{fontSize:'22px'}}/>
     }
   },
@@ -44,7 +44,7 @@ const appRoutes= [
     element: <Publication />,
     state: "publication",
     sidebarProps: {
-      displayText: "Publication #",
+      displayText: "Publication",
       icon: <HiClipboardDocumentList style={{fontSize:'22px'}}/>
     }
   },
@@ -53,7 +53,7 @@ const appRoutes= [
     element: <Collaborator />,
     state: "collaborator",
     sidebarProps: {
-      displayText: "Collaborators #",
+      displayText: "Collaborators",
       icon: <GiTeamIdea style={{fontSize:'22px'}}/>
     }
   },
@@ -63,7 +63,7 @@ const appRoutes= [
     element: <Members />,
     state: "members",
     sidebarProps: {
-      displayText: "Members #",
+      displayText: "Members",
       icon: <RiTeamFill style={{fontSize:'22px'}}/>
     }
   },
@@ -72,7 +72,7 @@ const appRoutes= [
     element: <Gallery />,
     state: "gallery",
     sidebarProps: {
-      displayText: "Gallary #",
+      displayText: "Gallary",
       icon: <RiGalleryFill style={{fontSize:'22px'}}/>
     }
   },
@@ -81,7 +81,7 @@ const appRoutes= [
     element: <Message />,
     state: "message",
     sidebarProps: {
-      displayText: "Messages #",
+      displayText: "Messages",
       icon: <MdMessage style={{fontSize:'22px'}}/>
     }
   },

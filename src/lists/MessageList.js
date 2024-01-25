@@ -46,7 +46,6 @@ const MessageList = (props) => {
   const DeleteClick = async (event) => {
     setDeleteSelected(event.id);
     setOpenDeleteConfirmation(true);
-    console.log("Single Delete : ", event.id);
 
   };
 

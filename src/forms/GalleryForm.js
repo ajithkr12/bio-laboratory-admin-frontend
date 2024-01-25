@@ -1,24 +1,17 @@
 import React , {useContext,useEffect,useState} from 'react'
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import { Autocomplete,FormControl } from '@mui/material';
-import { Grid,Typography,TextField } from "@mui/material";
+import { Grid,Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { AiOutlinePlus,AiFillDelete } from 'react-icons/ai';
-import IconButton from "@mui/material/IconButton";
+
 import { colors } from '../constants/ConstantColors';
 
-import { addConsignment } from '../apis/ConsignmentServices';
 import { ContextConsumer } from '../utils/Context';
 import ToastNotification from '../components/ToastNotification';
 import { toast } from "react-toastify";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import {db,storage} from '../firebase';
@@ -27,7 +20,7 @@ import "../App.css"
 import LoadingOverLay from '../components/loader/LoadingOverLay';
 const GalleryForm = (props) => {
 
-  const {openForm,setOpenForm} = props;
+  const {openForm,setOpenForm,initialFetch} = props;
   const {userData} = useContext(ContextConsumer);
 
   const {register,control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
@@ -41,9 +34,7 @@ const GalleryForm = (props) => {
 
   const [progresspercent, setProgresspercent] = useState(0);
 
-  const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
-  const [selectedTab, setSelectedTab] = useState(1);
   const [loading , setLoading] = useState(false)
 
   const OnCancel = () => {
@@ -68,10 +59,8 @@ const GalleryForm = (props) => {
 
 
   const handlePostData = async(file,data) => {
-    console.log("FIRST")
 
     if (!file) return;
-    console.log("SECOND")
 
     const storageRef = ref(storage, `gallery/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -80,7 +69,6 @@ const GalleryForm = (props) => {
       (snapshot) => {
         const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
         setProgresspercent(progress);
-        console.log("progresspercent",progress)
 
       },
       (error) => {
@@ -98,16 +86,36 @@ const GalleryForm = (props) => {
         
         
               const docRef =  await addDoc(collection(db, "gallery"), transformedData );
-              console.log("Document written with ID: ", docRef.id);
               if(docRef.id){
-                setLoading(false)
+                setLoading(false);
+                initialFetch()
+                toast.success("Successfully Added", {
+                  position: "top-center",
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "colored",
+                });
+                setImgUrl('');
+                setTimeout(() => {
+                  setOpenForm(false);
+                }, 2000);
               }
-              setImgUrl('');
             }
             
           } catch (error) {
-                  console.error("Error handling upload or adding document: ", error);
-                  setLoading(false)
+                  setLoading(false);
+                  toast.error(`Failed : ${error} `, {
+                    position: "top-center",
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                  });
 
           }
 
@@ -121,7 +129,6 @@ const GalleryForm = (props) => {
 
 
   const onSubmit = async(data, e) => {
-      console.log(data);
       setLoading(true)
       await handlePostData(data.picture[0],data);
 
@@ -130,7 +137,6 @@ const GalleryForm = (props) => {
 
   useEffect(() => {
 
-    console.log("RUN")
 
   }, [reset]);
 
@@ -316,55 +322,3 @@ const useStyles = {
 };
 // style END
 
-const researchType = [
-  { id: 0, name: 'Endangered Species Ecology'},
-  { id: 1, name: 'Disease Ecology' },
-
-];
-
-
-
-
-
-
-
-
-
-{/* <Grid item md={2} style={useStyles.root}>
-<Controller
-    name="serviceId"
-    control={control}
-    rules={{ required: 'Service Type is required' }}
-    render={({ field: { value, onChange } }) => (
-      // <FormControl fullWidth>
-        <Autocomplete
-          disableClearable
-          id="serviceId"
-          options={services}
-          value={value}
-          getOptionLabel={(option) =>
-            option.name !== null ? option.name : ""
-          }
-          style={useStyles.textfield}
-          onChange={async (event, newValue) => {
-            onChange(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                // type: "search",
-              }}
-              // InputLabelProps={{ shrink: true }}
-              label="Service Type"
-
-            />
-          )}
-        />
-      // </FormControl>
-    )}
-  />
-  <p style={useStyles.errorText}>{errors.serviceType ? errors.serviceType.message : ''}</p>
-</Grid> */}

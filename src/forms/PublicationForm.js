@@ -2,17 +2,13 @@ import React , {useContext,useEffect,useState} from 'react'
 import { useForm, Controller } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import { Autocomplete,FormControl } from '@mui/material';
-import { Grid,Typography,TextField } from "@mui/material";
+import { Autocomplete } from '@mui/material';
+import { Grid,Typography ,TextField} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { AiOutlinePlus,AiFillDelete } from 'react-icons/ai';
-import IconButton from "@mui/material/IconButton";
 import { colors } from '../constants/ConstantColors';
 
-import { addConsignment } from '../apis/ConsignmentServices';
 import { ContextConsumer } from '../utils/Context';
 import ToastNotification from '../components/ToastNotification';
 import { toast } from "react-toastify";
@@ -23,12 +19,10 @@ import { collection, addDoc, updateDoc ,doc} from "firebase/firestore";
 import LoadingOverLay from '../components/loader/LoadingOverLay';
 import {db,storage} from '../firebase';
 
-import { dateStringFormaterToIST,dateStringFormaterToUST} from '../services/DateTimeServices';
 const PublicationForm = (props) => {
 
-  const {isEditor,openForm,setOpenForm,dataToEditForm} = props;
+  const {isEditor,openForm,setOpenForm,dataToEditForm,initialFetch} = props;
   const {userData} = useContext(ContextConsumer);
-  const todayDate = new Date()
   const {control,handleSubmit,setValue,formState: { errors },reset,watch} = useForm({
     defaultValues: { 
     "title":dataToEditForm?.title ?? "",
@@ -39,9 +33,7 @@ const PublicationForm = (props) => {
     },
   });  
 
-  const [errorMeassage ,setErrorMeassage] = useState("")
   const currentFormState = watch();
-  const [selectedTab, setSelectedTab] = useState(1);
   const [loading , setLoading] = useState(false)
 
 
@@ -51,7 +43,6 @@ const PublicationForm = (props) => {
   const onSubmit = async(data) => {
     setLoading(true)
     const date = data.dateSelector.toString();
-    console.log("data.dateSelector ", data.dateSelector);
 
     const transformedData = {
       "title" : data.title,
@@ -65,29 +56,65 @@ const PublicationForm = (props) => {
     if(isEditor == true){
       try {
         const docRef = await updateDoc(doc(db, "publication",dataToEditForm.id), transformedData);
-        console.log("Document written with ID: ", docRef.id);
         // e.target.reset();
-        if(docRef.id){
-          setLoading(false)
-
-        }
-      } catch (e) {
-        console.error("Error adding document: ", e);
-        setLoading(false)
+        setLoading(false);
+        initialFetch();
+        toast.success("Successfully Updated", {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        setTimeout(() => {
+          setOpenForm(false);
+        }, 2000);
+      } catch (error) {
+        setLoading(false);
+        toast.error(`Failed : ${error} `, {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
 
       }
     }else{
       try {
         const docRef = await addDoc(collection(db, "publication"), transformedData);
-        console.log("Document written with ID: ", docRef.id);
         if(docRef.id){
           setLoading(false)
-          setOpenForm(false)
+          initialFetch();
+          toast.success("Successfully Added", {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          setTimeout(() => {
+            setOpenForm(false);
+          }, 2000);
         }
         // e.target.reset();
       } catch (e) {
-        console.error("Error adding document: ", e);
         setLoading(false)
+        toast.error(`Failed : ${e} `, {
+          position: "top-center",
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
 
       }
     }
@@ -100,7 +127,6 @@ const PublicationForm = (props) => {
 
   useEffect(() => {
 
-    console.log("RUN")
 
   }, [reset, currentFormState]);
 
@@ -392,47 +418,3 @@ const publicationType = [
 ];
 
 
-
-
-
-
-
-
-{/* <Grid item md={2} style={useStyles.root}>
-<Controller
-    name="serviceId"
-    control={control}
-    rules={{ required: 'Service Type is required' }}
-    render={({ field: { value, onChange } }) => (
-      // <FormControl fullWidth>
-        <Autocomplete
-          disableClearable
-          id="serviceId"
-          options={services}
-          value={value}
-          getOptionLabel={(option) =>
-            option.name !== null ? option.name : ""
-          }
-          style={useStyles.textfield}
-          onChange={async (event, newValue) => {
-            onChange(newValue);
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              InputProps={{
-                ...params.InputProps,
-                // type: "search",
-              }}
-              // InputLabelProps={{ shrink: true }}
-              label="Service Type"
-
-            />
-          )}
-        />
-      // </FormControl>
-    )}
-  />
-  <p style={useStyles.errorText}>{errors.serviceType ? errors.serviceType.message : ''}</p>
-</Grid> */}
