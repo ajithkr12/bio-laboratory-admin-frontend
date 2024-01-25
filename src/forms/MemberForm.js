@@ -603,10 +603,11 @@ const designationType = [
   { id: 12 , name:"Technical Assistant "},
   { id: 13 , name:"Project Based Student Trainee"},
 
-  { id: 14 , name:"SR. TECHNICAL OFFICER"},
-  { id: 15 , name:"Project Associate"}
+  { id: 14 , name:"SR. Technical Officer"},
+  { id: 15 , name:"Project Associate"},
 
-
+  { id: 16 , name:"Senior Research Fellow"},
+  { id: 17 , name:"Junior Research Fellow"}
 
 
 ];
