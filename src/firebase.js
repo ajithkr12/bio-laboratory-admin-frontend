@@ -11,6 +11,7 @@ const firebaseConfig = {
     // messagingSenderId: "577587998243",
     // appId: "1:577587998243:web:a39ceacb172cfe919acb96",
     // measurementId: "G-EMZ271Y78V"
+
     apiKey: "AIzaSyB4wfP4Jaj8dt1me8ou4k20pqlJrzNh56g",
     authDomain: "bio-lab-fd574.firebaseapp.com",
     projectId: "bio-lab-fd574",

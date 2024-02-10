@@ -7,8 +7,6 @@ import Header from "../components/Header";
 import Sidebar from "../components/sideMenu/SideMenu";
 // import Topbar from "../common/Topbar";
 import { ContextConsumer } from '../utils/Context';
-import { getUserDataFromAuthToken } from '../apis/UserServices';
-import { setHeader } from '../apis/axios/AxiosConfig';
 const MainPage = () => {
   const sidebarWidth =340;
   const {mainPage,setMainPage, sideMenuOpen, setSideMenuOpen, megaMenu ,setMegaMenu,userData ,setUserData} = useContext(ContextConsumer);

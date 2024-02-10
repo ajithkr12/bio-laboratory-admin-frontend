@@ -1,4 +1,4 @@
-import React, { useContext ,useEffect} from "react";
+import React, { useContext ,useEffect, useState} from "react";
 import { styled } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -7,11 +7,10 @@ import IconButton from "@mui/material/IconButton";
 
 import {Stack,Avatar,Box,} from "@mui/material";
 import { ContextConsumer } from "../utils/Context";
-import logo from '../../src/assets/images/logo.png'
 import MenuIcon from '@mui/icons-material/Menu';
 import {colors} from "../constants/ConstantColors"
 import { diamention } from "../constants/ConstantDiamentions";
-
+import MenuBar from "./MenuBar";
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -35,29 +34,21 @@ const Header = (props) => {
   const {
     sideMenuOpen,
     setSideMenuOpen,
-    notificationOpen,
-    setNotificationOpen,
-    userData
+    menuBarOpen , setMenuBarOpen 
   } = useContext(ContextConsumer);
 
-  console.log("USER NAV",userData)
 
 
+  const handleMenuBarOpen = () => {
+    setMenuBarOpen(true);
+  };
   const handleDrawerOpen = () => {
     setSideMenuOpen(!sideMenuOpen);
   };
-  const handleNotificationOpen = () => {
-    // setNotificationOpen(!notificationOpen);
-  };
-  const handleLogout = () => {
-    console.log("USER LOGOUT")
-  };
 
   useEffect(() => {
-    if(userData === undefined){
-      return
-    }
-  }, [userData]);
+ 
+  }, []);
 
   return (
     <AppBar
@@ -88,7 +79,7 @@ const Header = (props) => {
 
 
 
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }} onClick={handleMenuBarOpen}>
           <Box
             style={{
               backgroundColor: colors.navbar_profile_bg,
@@ -106,27 +97,29 @@ const Header = (props) => {
               }}
             />
           </Box>
-          {/* <Box>
+          <Box>
               <>
                 <Typography
                   style={{ fontSize: "14px" }}
                   sx={{ color: colors.navbar_font }}
                 >
-                  {userData ? userData.email :''}
+                  Admin
                 </Typography>
                 <Typography
                   style={{ fontSize: "10px" }}
                   sx={{ color: colors.navbar_font }}
                 >
-                 Admin -  {userData ? userData.hubId :''}
+                 ACE Lab
 
                 </Typography>
               </>
           
-          </Box> */}
+          </Box>
         </Stack>
         <div style={{ width: 40 }} />
       </Toolbar>
+      {menuBarOpen && <MenuBar/>}
+
     </AppBar>
     
   );

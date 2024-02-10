@@ -18,6 +18,8 @@ import {db,storage} from '../firebase';
 import { collection, addDoc } from "firebase/firestore";
 import "../App.css"
 import LoadingOverLay from '../components/loader/LoadingOverLay';
+import Resizer from "react-image-file-resizer";
+
 const GalleryForm = (props) => {
 
   const {openForm,setOpenForm,initialFetch} = props;
@@ -58,74 +60,73 @@ const GalleryForm = (props) => {
   };
 
 
-  const handlePostData = async(file,data) => {
-
+  const handlePostData = async (file, data) => {
     if (!file) return;
-
-    const storageRef = ref(storage, `gallery/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on("state_changed",
-      (snapshot) => {
-        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setProgresspercent(progress);
-
-      },
-      (error) => {
-        alert(error);
-      },
-      () => {
-         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          setImgUrl(downloadURL)
-          try {
-
-            if (downloadURL) {
-              const transformedData = {
-                imgURL: downloadURL,
-              };
-        
-        
-              const docRef =  await addDoc(collection(db, "gallery"), transformedData );
-              if(docRef.id){
-                setLoading(false);
-                initialFetch()
-                toast.success("Successfully Added", {
-                  position: "top-center",
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                  progress: undefined,
-                  theme: "colored",
-                });
-                setImgUrl('');
-                setTimeout(() => {
-                  setOpenForm(false);
-                }, 2000);
-              }
-            }
-            
-          } catch (error) {
-                  setLoading(false);
-                  toast.error(`Failed : ${error} `, {
-                    position: "top-center",
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "colored",
-                  });
-
-          }
-
-
-        });
+  
+    try {
+      // Resize the image
+      const resizedFile = await new Promise((resolve) => {
+        Resizer.imageFileResizer(
+          file,
+          1024,
+          1024,
+          'JPEG', // Output format: 'PNG'
+          80, // Quality: 100 (highest)
+          0,
+          (resizedFile) => {
+            resolve(resizedFile);
+          },
+          'file' // Output type: 'file' to get the file object directly
+        );
+      });
+  
+      // Upload the resized image to Firebase Storage
+      const storageRef = ref(storage, `gallery/${file.name}`);
+      const uploadTask = await uploadBytesResumable(storageRef, resizedFile);
+      const downloadURL = await getDownloadURL(uploadTask.ref);
+      console.log('Image uploaded:', downloadURL);
+      setImgUrl(downloadURL);
+  
+      // If image URL is set, proceed to add data to Firestore
+      if (downloadURL) {
+        const transformedData = {
+          imgURL: downloadURL,
+          // Add other data as needed
+        };
+  
+        const docRef = await addDoc(collection(db, "gallery"), transformedData);
+        if (docRef.id) {
+          setLoading(false);
+          initialFetch();
+          toast.success("Successfully Added", {
+            position: "top-center",
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+          setImgUrl('');
+          setTimeout(() => {
+            setOpenForm(false);
+          }, 2000);
+        }
       }
-      
-    );
-
-  }
+    } catch (error) {
+      setLoading(false);
+      toast.error(`Failed : ${error} `, {
+        position: "top-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    }
+  };
+  
 
 
   const onSubmit = async(data, e) => {

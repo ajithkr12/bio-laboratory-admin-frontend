@@ -1,5 +1,3 @@
-
-import Home from "../screens/Home";
 import Research from '../screens/Research';
 import Publication from "../screens/Publication";
 import Members from "../screens/Members";
@@ -29,7 +27,7 @@ const appRoutes= [
 
 
   {
-    path: "/",
+    path: "/research",
     element: <Research />,
     state: "research",
     sidebarProps: {

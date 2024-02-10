@@ -8,6 +8,7 @@ function  ContextProvider(props) {
 
     const [userData ,setUserData] = useState()
     const [sideMenuOpen , setSideMenuOpen, ] = useState(true);
+    const [menuBarOpen , setMenuBarOpen ] = useState(false)
     const [appState,setAppState] = useState();
     const [mainPage, setMainPage ] = useState();
     const [megaMenu, setMegaMenu] = useState({
@@ -22,7 +23,8 @@ function  ContextProvider(props) {
             sideMenuOpen , setSideMenuOpen,
             appState,setAppState,
             mainPage, setMainPage,
-            megaMenu , setMegaMenu
+            megaMenu , setMegaMenu,
+            menuBarOpen , setMenuBarOpen
         }}>
 
             {props.children}
