@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 const DeleteConfirmation = (props) => {
-  console.log("props :",props);
   
   var { 
     id, 

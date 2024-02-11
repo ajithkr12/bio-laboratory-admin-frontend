@@ -25,7 +25,6 @@ const Login = () =>  {
 
     const handleChange = (event) => {
         setChecked(event.target.checked);
-        console.log(checked)
       };
 
     const onSubmit = async(_data) => {
@@ -65,12 +64,12 @@ const Login = () =>  {
                     name="email"
                     control={control}
                     defaultValue=""
-                    rules={{ required: 'Email is required' }}
+                    rules={{ required: 'User Name is required' }}
                     render={({ field }) => (
                     <TextField
                         {...field}
                         id="outlined-basic" 
-                        label="E mail"
+                        label="User Name"
                         variant="outlined"
                         fullWidth
                         error={!!errors.email}

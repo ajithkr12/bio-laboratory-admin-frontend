@@ -51,7 +51,6 @@ const PublicationTableBodyRender = (props) => {
 }
 
 
-  console.log("data : ", bodyData);
 
 
   return (

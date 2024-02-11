@@ -34,7 +34,6 @@ const ResearchTableBodyRender = (props) => {
     },
   }));
 
-  console.log("data : ", bodyData);
 
 
   return (

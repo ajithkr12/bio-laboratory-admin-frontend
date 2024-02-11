@@ -34,7 +34,6 @@ const MemberTableBodyRender = (props) => {
     },
   }));
 
-  console.log("data : ", bodyData);
 
 
   return (

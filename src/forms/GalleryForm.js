@@ -84,7 +84,6 @@ const GalleryForm = (props) => {
       const storageRef = ref(storage, `gallery/${file.name}`);
       const uploadTask = await uploadBytesResumable(storageRef, resizedFile);
       const downloadURL = await getDownloadURL(uploadTask.ref);
-      console.log('Image uploaded:', downloadURL);
       setImgUrl(downloadURL);
   
       // If image URL is set, proceed to add data to Firestore

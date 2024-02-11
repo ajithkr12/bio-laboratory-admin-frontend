@@ -8,7 +8,6 @@ const SearchBox = (props) => {
     const {setSearchTerm} =props;
     const handleInputChange = (e) => {
         setSearchTerm(e.target.value);
-    // console.log(searchData)
     };
 
 

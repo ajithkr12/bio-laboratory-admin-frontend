@@ -51,7 +51,6 @@ const CollaboratorTableBodyRender = (props) => {
 }
 
 
-  console.log("data : ", bodyData);
 
 
   return (
